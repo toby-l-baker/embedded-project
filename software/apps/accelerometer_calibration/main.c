@@ -20,6 +20,7 @@
 #include "nrfx_saadc.h"
 
 #include "buckler.h"
+#include "virtual_timer.h"
 
 // ADC channels
 #define X_CHANNEL 0
@@ -27,6 +28,7 @@
 #define Z_CHANNEL 2
 #define LSB_SIZE 3.6 / 4096
 #define PI 3.14159265358979
+#define NUM_SAMPLES 1024
 
 /* Struct for storing information about each ADC Channel */
 struct adc_channel
@@ -39,16 +41,6 @@ struct adc_channel
   float theta;
   float g;
 };
-
-/* Function to write to a log file to be able to filter accelerometer data */
-int write_to_file(struct adc_channel x, struct adc_channel y, struct adc_channel z, char const *fileName)
-{
-  FILE *f=fopen(fileName,"a");
-  if(f==NULL) return -1;
-  fprintf(f,"%f,%f,%f\n", x.voltage, y.voltage, z.voltage);
-  fclose(f);
-  return 0;
-}
 
 /* Converts a given voltage reading into units of gravity */
 float vtog(struct adc_channel channel) {
@@ -74,6 +66,12 @@ float read_adc_voltage(uint8_t channel) {
   nrf_saadc_value_t val = sample_value(channel);
   float voltage = val*LSB_SIZE;
   return voltage;
+}
+
+bool sample = false;
+
+void adc_callback() {
+  sample = true;
 }
 
 int main (void) {
@@ -115,46 +113,55 @@ int main (void) {
   printf("Buckler initialized!\n");
 
 
+  // Don't forget to initialize your timer library
+  virtual_timer_init();
+  nrf_delay_ms(3000);
+
+  virtual_timer_start_repeated(125, adc_callback);
+
   struct adc_channel x_ch;
   struct adc_channel y_ch;
   struct adc_channel z_ch;
 
-  bool log_ = false;
-  char const * fileName = "X.txt";
-
   // Write headers
-  if (log_) {
-    FILE *f=fopen(fileName,"w");
-    if(f==NULL) return -1;
-    fprintf(f,"%s,%s,%s\n","X (V)", "Y (V)", "Z (V)");
-    fclose(f);
-  }
+  printf("%s,%s,%s\n","X (V)", "Y (V)", "Z (V)");
+  uint32_t i = 0;
+  uint32_t j = 0;
 
+  float x[NUM_SAMPLES] = {0};
+  float y[NUM_SAMPLES] = {0};
+  float z[NUM_SAMPLES] = {0};
+  bool complete = true;
   // loop forever
-  while (1) {
-    // read ADC voltages
-    x_ch.voltage = read_adc_voltage(X_CHANNEL);
-    y_ch.voltage = read_adc_voltage(Y_CHANNEL);
-    z_ch.voltage = read_adc_voltage(Z_CHANNEL);
+  while(1) {
+    while (i < NUM_SAMPLES) {
+      if (sample && complete) { // && complete
+        // read ADC voltages
+        x[i] = read_adc_voltage(X_CHANNEL);
+        y[i] = read_adc_voltage(Y_CHANNEL);
+        z[i] = read_adc_voltage(Z_CHANNEL);
 
-    // converts voltages to units of gravity
-    x_ch.g = vtog(x_ch);
-    y_ch.g = vtog(y_ch);
-    z_ch.g = vtog(z_ch);
+        //x_ch.voltage = read_adc_voltage(X_CHANNEL);
+        //y_ch.voltage = read_adc_voltage(Y_CHANNEL);
+        //z_ch.voltage = read_adc_voltage(Z_CHANNEL);
 
-    // find rotation angles about the x, y and z axes.
-    x_ch.theta = atan(x_ch.g / sqrt(y_ch.g*y_ch.g + z_ch.g*z_ch.g))/PI*180;
-    y_ch.theta = atan(y_ch.g / sqrt(x_ch.g*x_ch.g + z_ch.g*z_ch.g))/PI*180;
-    z_ch.theta = atan(z_ch.g / sqrt(y_ch.g*y_ch.g + x_ch.g*x_ch.g))/PI*180;
-
-    // print voltages from ADC
-    printf("x: %.2f\ny: %.2f\nz: %.2f\n", x_ch.voltage, y_ch.voltage, z_ch.voltage);
-    printf("theta_x: %.2f\ntheta_y: %.2f\ntheta_z: %.2f\n", x_ch.theta, y_ch.theta, z_ch.theta);
-
-    if (log_) {
-      write_to_file(x_ch, y_ch, z_ch, fileName);
+        sample = false;
+        i++;
+      }
     }
-
+    i = 0;
+    while (j < NUM_SAMPLES) {
+      // print voltages from ADC
+      //printf("%.8f,%.8f,%.8f\n", x_ch.voltage, y_ch.voltage, z_ch.voltage);
+      if (complete) {
+        printf("%.8f,%.8f,%.8f\n", x[j], y[j], z[j]);
+        nrf_delay_ms(10);
+        j++;
+      }
+    }
+    complete = false;
+    j = 0;
+    printf("DONE");
     nrf_delay_ms(100);
   }
 }
