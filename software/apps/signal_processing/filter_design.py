@@ -17,8 +17,8 @@ class Data:
 
     def filter(self, taps):
         output = np.zeros(len(self.data)-len(taps))
-        for i in range(len(taps), len(self.data)):
-            output[i] = data[i:i+len(taps)].dot(np.transpose(taps))
+        for i in range(0, len(self.data)-len(taps)):
+            output[i] = self.data[i:i+len(taps)].dot(np.transpose(taps))
         return output
 
 
@@ -33,9 +33,9 @@ freq_long = np.linspace(0, F_SAMPLE//2, 4096//2)
 data = np.genfromtxt("../accelerometer_calibration/4kHz.txt", delimiter=',')
 x_long = np.genfromtxt("../accelerometer_calibration/4kHz_x.txt", delimiter=',')
 x_long = Data(x_long)
-# x_data = Data(data[:, 0])
-# y_data = Data(data[:, 1])
-# z_data = Data(data[:, 2])
+x_data = Data(data[:, 0])
+y_data = Data(data[:, 1])
+z_data = Data(data[:, 2])
 
 numtaps = 50
 
@@ -81,9 +81,32 @@ plt.plot(time_long-delay, filtered_x, 'r-')
 # Plot just the "good" part of the filtered signal.  The first N-1
 # samples are "corrupted" by the initial conditions.
 plt.plot(time_long[numtaps-1:]-delay, filtered_x[numtaps-1:], 'g-')
+plt.plot(time_long[numtaps:]-delay, x_long.filter(taps), 'r-')
 plt.ylim([1.2, 1.6])
 plt.xlabel('t')
 plt.grid(True)
 
+plt.figure(4)
+plt.plot(time[numtaps:], x_data.filter(taps), 'b-')
+plt.plot(time[numtaps:], y_data.filter(taps), 'g-')
+plt.plot(time[numtaps:], z_data.filter(taps), 'r-')
+plt.plot(time, x_data.data, 'r-', alpha=0.2)
+plt.plot(time, y_data.data, 'b-', alpha=0.2)
+plt.plot(time, z_data.data, 'g-', alpha=0.2)
+
+print(taps)
+#[-6.74184202e-19  7.23168838e-05  2.94312721e-04  6.80624788e-04
+  # 1.25404475e-03  2.04323985e-03  3.07979211e-03  4.39476698e-03
+  # 6.01505838e-03  7.95977580e-03  1.02369404e-02  1.28407397e-02
+  # 1.57495575e-02  1.89249456e-02  2.23116458e-02  2.58387011e-02
+  # 2.94216243e-02  3.29655233e-02  3.63690183e-02  3.95287309e-02
+  # 4.23440888e-02  4.47221621e-02  4.65822437e-02  4.78599001e-02
+  # 4.85102462e-02  4.85102462e-02  4.78599001e-02  4.65822437e-02
+  # 4.47221621e-02  4.23440888e-02  3.95287309e-02  3.63690183e-02
+  # 3.29655233e-02  2.94216243e-02  2.58387011e-02  2.23116458e-02
+  # 1.89249456e-02  1.57495575e-02  1.28407397e-02  1.02369404e-02
+  # 7.95977580e-03  6.01505838e-03  4.39476698e-03  3.07979211e-03
+  # 2.04323985e-03  1.25404475e-03  6.80624788e-04  2.94312721e-04
+  # 7.23168838e-05 -6.74184202e-19]
 
 plt.show()
