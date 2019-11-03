@@ -28,7 +28,7 @@
 #define Z_CHANNEL 2
 #define LSB_SIZE 3.6 / 4096
 #define PI 3.14159265358979
-#define NUM_SAMPLES 1024
+#define NUM_SAMPLES 4096
 
 /* Struct for storing information about each ADC Channel */
 struct adc_channel
@@ -129,8 +129,8 @@ int main (void) {
   uint32_t j = 0;
 
   float x[NUM_SAMPLES] = {0};
-  float y[NUM_SAMPLES] = {0};
-  float z[NUM_SAMPLES] = {0};
+  //float y[NUM_SAMPLES] = {0};
+  //float z[NUM_SAMPLES] = {0};
   bool complete = true;
   // loop forever
   while(1) {
@@ -138,8 +138,8 @@ int main (void) {
       if (sample && complete) { // && complete
         // read ADC voltages
         x[i] = read_adc_voltage(X_CHANNEL);
-        y[i] = read_adc_voltage(Y_CHANNEL);
-        z[i] = read_adc_voltage(Z_CHANNEL);
+        //y[i] = read_adc_voltage(Y_CHANNEL);
+        //z[i] = read_adc_voltage(Z_CHANNEL);
 
         //x_ch.voltage = read_adc_voltage(X_CHANNEL);
         //y_ch.voltage = read_adc_voltage(Y_CHANNEL);
@@ -154,7 +154,8 @@ int main (void) {
       // print voltages from ADC
       //printf("%.8f,%.8f,%.8f\n", x_ch.voltage, y_ch.voltage, z_ch.voltage);
       if (complete) {
-        printf("%.8f,%.8f,%.8f\n", x[j], y[j], z[j]);
+        //printf("%.8f,%.8f,%.8f\n", x[j], y[j], z[j]);
+        printf("%.8f\n", x[j]);
         nrf_delay_ms(10);
         j++;
       }
