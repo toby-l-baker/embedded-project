@@ -5,6 +5,3 @@ https://www.amazon.com/dp/B07FVFM9NM?aaxitk=d0sSa6J4CLsPhtKP8Dk0rg&pd_rd_i=B07FV
 https://www.amazon.com/90-10mm-Black-Robot-Wheels/dp/B00T3MQG7M/ref=sr_1_8?keywords=robot+wheels&qid=1572737752&sr=8-8
 ## Battery
 https://www.amazon.com/TalentCell-Rechargeable-Amplifier-Multi-led-Indicator/dp/B00MHNQIR2/ref=sr_1_30?keywords=12v+battery&qid=1572740457&sr=8-30
-
-# to use this repository first follow this guide here
-https://github.com/brghena/buckler-external-repo
