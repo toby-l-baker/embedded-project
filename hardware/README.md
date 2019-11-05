@@ -1,6 +1,7 @@
+![Bike](https://github.com/toby-l-baker/embedded-project/blob/master/hardware/Bike_Assembly.PNG)
 # Parts to Buy
 ## Driving Motor
-https://www.amazon.com/dp/B07FVFM9NM?aaxitk=d0sSa6J4CLsPhtKP8Dk0rg&pd_rd_i=B07FVRTWKV&pf_rd_p=44fc3e0f-4b9e-4ed8-b33b-363a7257163d&hsa_cr_id=4443787650501&sb-ci-n=asinImage&sb-ci-v=https%3A%2F%2Fimages-na.ssl-images-amazon.com%2Fimages%2FI%2F318z2N4ZdQL.jpg&sb-ci-a=B07FVRTWKV&th=1
+https://www.amazon.com/dp/B071GX51N7/ref=sspa_dk_detail_3?spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUEzQzRaV0xGSlZPUTYmZW5jcnlwdGVkSWQ9QTA1OTAzNDUxMTU3M05DOE5XME1PJmVuY3J5cHRlZEFkSWQ9QTA2NDg1ODAzRDZWMFFQUzYwUzFCJndpZGdldE5hbWU9c3BfZGV0YWlsMiZhY3Rpb249Y2xpY2tSZWRpcmVjdCZkb05vdExvZ0NsaWNrPXRydWU&th=1
 ## Flywheel Motor
 https://www.pololu.com/product/4863
 ## Wheels
