@@ -1,0 +1,26 @@
+Vcc = ?
+
++1g Z: 1.8040 V
+-1g Z: 1.0224 V
+0g Z: 1.3950 V
+
+V(+1g) = z_bias + 1g * z_gain
+V(-1g) = z_bias - 1g * z_gain
+
+2.8264 = 2*z_bias
+z_bias = 1.4132 V
+z_gain = 1.8040 - 1.4132 = 0.3908 V/g
+
++1g Y: 1.7878 V
+-1g Y: 1.0140 V
+0g Y: 1.4075 V
+
+y_bias = 1.4009 V
+y_gain = 0.3869 V/g
+
++1g X: 1,7840 V
+-1g X: 1.0242 V
+0g X: 1.3830 V
+
+x_bias = 1.4041 V
+x_gain = 0.3799 V/g
