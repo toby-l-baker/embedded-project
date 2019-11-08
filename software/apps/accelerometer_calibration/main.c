@@ -30,21 +30,16 @@
 #define LSB_SIZE 3.6 / 4096
 #define PI 3.14159265358979
 #define NUM_SAMPLES 4096
-#define LEN_BUFFER 50
+#define LEN_BUFFER 30
 
-float TAPS[50] = {-6.74184202E-19, 7.23168838E-05, 2.94312721E-04, 6.80624788e-04,
-   1.25404475E-03, 2.04323985E-03, 3.07979211E-03, 4.39476698E-03,
-   6.01505838E-03, 7.95977580E-03, 1.02369404E-02, 1.28407397E-02,
-   1.57495575E-02, 1.89249456E-02, 2.23116458E-02, 2.58387011E-02,
-   2.94216243E-02, 3.29655233E-02, 3.63690183E-02, 3.95287309E-02,
-   4.23440888E-02, 4.47221621E-02, 4.65822437E-02, 4.78599001E-02,
-   4.85102462E-02, 4.85102462E-02, 4.78599001E-02, 4.65822437E-02,
-   4.47221621E-02, 4.23440888E-02, 3.95287309E-02, 3.63690183E-02,
-   3.29655233E-02, 2.94216243E-02, 2.58387011E-02, 2.23116458E-02,
-   1.89249456E-02, 1.57495575E-02, 1.28407397E-02, 1.02369404E-02,
-   7.95977580E-03, 6.01505838E-03, 4.39476698E-03, 3.07979211E-03,
-   2.04323985E-03, 1.25404475E-03, 6.80624788E-04, 2.94312721E-04,
-   7.23168838E-05, -6.74184202E-19};
+float TAPS[LEN_BUFFER] = {-1.1390375091067432E-18,0.00035259598715081734,0.001477766783703178,0.00355893500529667,
+0.006843359038215591,0.01156690107151631,0.01787102176489292,0.025729190352121574,
+0.03489853523601125,0.044908166421298065,0.05508897695608773,0.06464209335547222,
+0.07273590538888708,0.07861610666014734,0.08171044597919938,0.08171044597919938,
+0.07861610666014733,0.07273590538888705,0.06464209335547222,0.05508897695608773,
+0.04490816642129805,0.03489853523601124,0.025729190352121564,0.017871021764892907,
+0.011566901071516297,0.006843359038215583,0.003558935005296659,0.001477766783703178,
+0.00035259598715081734,-1.1390375091067432E-18};
 
 /* Struct for storing information about each ADC Channel */
 struct adc_channel
@@ -69,7 +64,6 @@ struct adc_channel * channel_create(float sensitivity, float bias, uint8_t chann
     }
     return ch;
 }
-
 
 // sample a particular analog channel in blocking mode
 nrf_saadc_value_t sample_value (uint8_t channel) {
@@ -110,10 +104,15 @@ void read_and_filter_voltage(struct adc_channel * ch, struct slist * list) {
   }
 }
 
-/* Converts a given voltage reading into units of gravity */
-float vtog(struct adc_channel * channel) {
-  float g = (channel->voltage - channel->bias) / channel->sensitivity;
-  return g;
+/* Converts gravity to an angle */
+void update_angles(struct adc_channel * x_ch, struct adc_channel * y_ch, struct adc_channel * z_ch) {
+  x_ch->g = (x_ch->filtered_voltage - x_ch->bias) / x_ch->sensitivity;
+  y_ch->g = (y_ch->filtered_voltage - y_ch->bias) / y_ch->sensitivity;
+  z_ch->g = (z_ch->filtered_voltage - z_ch->bias) / z_ch->sensitivity;
+
+  x_ch->theta = atan(x_ch->g / sqrt(y_ch->g*y_ch->g + z_ch->g*z_ch->g))/PI*180;
+  y_ch->theta = atan(y_ch->g / sqrt(x_ch->g*x_ch->g + z_ch->g*z_ch->g))/PI*180;
+  z_ch->theta = atan(z_ch->g / sqrt(x_ch->g*x_ch->g + y_ch->g*y_ch->g))/PI*180;
 }
 
 // callback for SAADC events
@@ -202,13 +201,13 @@ int main (void) {
   virtual_timer_init();
   nrf_delay_ms(3000);
 
-  struct adc_channel * x_ch = channel_create(0.0, 0.0, X_CHANNEL);
+  struct adc_channel * x_ch = channel_create(0.3908, 1.4132, X_CHANNEL);
   slist * x_list = slist_create();
 
-  struct adc_channel * y_ch = channel_create(0.0, 0.0, Y_CHANNEL);
+  struct adc_channel * y_ch = channel_create(0.3869, 1.4009, Y_CHANNEL);
   slist * y_list = slist_create();
 
-  struct adc_channel * z_ch = channel_create(0.0, 0.0, Z_CHANNEL);
+  struct adc_channel * z_ch = channel_create(0.3799, 1.4041, Z_CHANNEL);
   slist * z_list = slist_create();
   // fill up the circular buffers of adc readings
   adc_buf_init(x_ch, x_list);
@@ -231,16 +230,18 @@ int main (void) {
       regular_sampling(); //NUM_SAMPLES defined as a global
       complete = false;
     } else { //For calibration
-      read_adc_voltage(x_ch);
-      read_adc_voltage(y_ch);
-      read_adc_voltage(z_ch);
+      // read_adc_voltage(x_ch);
+      // read_adc_voltage(y_ch);
+      // read_adc_voltage(z_ch);
       read_and_filter_voltage(x_ch, x_list);
       read_and_filter_voltage(y_ch, y_list);
       read_and_filter_voltage(z_ch, z_list);
 
-      printf("%.8f,%.8f,%.8f,", (x_ch->voltage), (y_ch->voltage), (z_ch->voltage));
-      printf("%.8f,%.8f,%.8f\n", (x_ch->filtered_voltage), (y_ch->filtered_voltage), (z_ch->filtered_voltage));
-      nrf_delay_ms(100);
+      update_angles(x_ch, y_ch, z_ch);
+
+      printf("Roll: %.4f, Pitch:%.4f, Yaw: %.4f\n", (x_ch->theta), (y_ch->theta), (z_ch->theta));
+      //printf("X:%.4f\n", (x_ch->filtered_voltage)); //(x_ch->filtered_voltage), (y_ch->filtered_voltage),
+      nrf_delay_ms(50);
     }
   }
 }
