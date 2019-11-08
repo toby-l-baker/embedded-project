@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{amsmath} 
+
+\author{Léo Toulet, and I dont remember last names}
+\date{Fall 2019}
+\title{Flywheel stabilized self balancing bike - Physical modeling}
+
+
+\begin{document}
+
+\maketitle
+
+\section{Lagrangian dynamics}
+
+The objective of this document is to provide a physical model of a simple Bike system. Our objective is to to be able to balance such a bike even at low speeds, using a closed-loop flywheel to counter the action of gravity on the bike and maintain an upward position.
+For this purpose, we define a simple model of our bike system, consisting of two main parts. 
+\begin{itemize}
+	\item The bike structure, containing the frame, battery, Buckler and wheels
+	\item The Motor+Flywheel assembly, that actually balances the bike
+\end{itemize}
+
+\subsection{Definitions}
+
+We define the intrinsic parameters of the bike structure as its mass $m_b$, its moment of inertia about its rotation axis (i.e. is the ground) $I_b$ and the height of its center of gravity $L_b$. Similarly, we define the mass of the motor,flywheel assembly to be $m_w$, its distance to the ground to be $L_w$ and the moment of inertia of the wheel around its rotation axis to be $I_w$. As far as the rotational motion of the bike+flywheel+motor structure is concerned, we consider the \{flywheel+motor\} to be a point. 
+
+To define the Lagrangian of the system, we also need to define the generalized coordinates, which in our case are simple $\alpha$, the angle the bike makes with the vertical, and $\theta$, the angle the flywheel makes to some arbitrary reference point. We therefore have $$ q = [\alpha, \theta]$$. Finally, we define $F$ to be the generalized forces applied to our system, and we assume that \textit{there are no non-conservative forces}
+
+%Insert diagram here
+
+\subsection{Lagrangian}
+
+Using our previous definitions, we define the Lagrangian function to be the following quantity $L(q,\dot{q}) = E(q, \dot{q}) - V(q, \dot{q})$. Here, E is the kinetic energy of the system and V is its potential energy. The Lagrangian satisfies the following equation: satisfies:
+
+$$ \frac{d}{dt}\frac{\partial L}{\partial \dot{q}} - \frac{\partial L}{\partial q} = F$$ 
+
+\subsection{Energies}
+
+We will begin with the the potential energy. The only potential energy applied on the system comes from the weight. Therefore, we have $V(q, \dot{q}) = (m_w L_w + m_b L_b)g\sin(\alpha)$. Here, we will only consider small inclinations of the bike $\alpha << \pi/6$, and we can reasonably make the approximation that the sine is equal to its argument, transforming our potential energy into 
+
+$$V(q, \dot{q}) = (m_w L_w + m_b L_b)g\alpha$$
+
+The kinetic energy has three terms. The first two account for the kinetic energy of the global rotation of the system around the ground axis. The last term accounts for the rotation of the wheel around the motor axis.
+
+$$E(q, \dot{q}) = \frac{1}{2}\left[I_p \dot{\alpha}^2 + m_w L_w^2 \dot{\alpha}^2 + I_w \dot{\theta}^2)\right]$$
+
+Finally, $F$ is the vector of generalized forces that apply on the system, which in our case is simply defined as:
+
+$$F = [-I_w \ddot{\alpha}, \tau - I_w \ddot{\theta}]$$
+
+
+\subsection{System dynamics}
+
+Working through the differentiation, we arrive at the following coupled equations: 
+
+$$I_s \ddot{\alpha} + I_w\ddot{\theta} = \tau_\alpha \alpha$$
+$$I_w(\ddot{\alpha} + \ddot{\theta}) = \tau$$
+
+Where $\tau_\alpha  = (m_b L_b + m_w L_w)g$ and $ I_s= I_b + m_w*L_w^2$
+
+
+\section{System specifications}
+
+Using the previous coupled equations, we want to find the minimum motor and flywheel specifications for our self-balancing bike to work. To do that, we will make a couple of assumptions:
+
+\begin{center}
+\begin{tabular}{|c|rl|}
+\hline
+Variable & Value & Unit \\
+\hline
+\hline
+
+$L_w$ & $10$ & $cm$ \\
+$L_b$ & $5$ & $cm$ \\
+$m_w$ & $600$ & $g$ \\
+$m_b$ & $1000$ & $g$ \\
+$I_b$ & $5 10^{-3}$ & $kgm^2$ \\
+$I_w$ & $9 10^{-5}$ & $kgm^2$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Using those vales, we get $\tau_\alpha = 3 Nm$ and $I_s = 1.1 10^{-2} kgm^2$. Assuming we want alpha to remain within 4 degrees of the vertical, we define $\alpha_{max} = 0.07$ rad.
+
+\subsection{Flywheel motor}
+
+The dynamics equations can be coupled to give:
+
+$$\ddot{\alpha} = \frac{\tau_\alpha \alpha - \tau}{I_s + I_w}$$
+
+Correcting an imbalance means correcting the sign of $\ddot{\alpha}$ to make it opposite to that of $\alpha$. That is, if we want our system to be able to be able to correct positioning errors, we want:
+
+$$|\tau| > |\tau_\alpha \alpha_{max}|$$
+
+i.e. :
+
+$$|\tau| > 0.2 Nm$$
+
+
+\subsection{Flywheel moment of inertia}
+
+
+
+\end{document}
