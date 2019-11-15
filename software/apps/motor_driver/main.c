@@ -18,150 +18,87 @@
 #include "nrf_serial.h"
 #include "nrfx_gpiote.h"
 #include "nrfx_saadc.h"
+#include "app_pwm.h"
 
 #include "buckler.h"
-#include "virtual_timer.h"
-#include "slist.h"
+
+#define FLYWHEEL_PIN NRF_GPIO_PIN_MAP(0,19) //using BUCKLER_SENSORS_SCL
+#define ENCODER_CH_A NRF_GPIO_PIN_MAP(0,20) //using BUCKLER_SENSORS_SDA
+#define ENCODER_CH_B NRF_GPIO_PIN_MAP(0,7) //using BUCKLER_IMU_INTERUPT
+#define DRIVE_PIN NRF_GPIO_PIN_MAP(0,27) //using BUCKLER_LIGHT_INTERRUPT
 
 /* Struct for storing information about each ADC Channel */
 struct motor
 {
   bool forward;
   bool backward;
-  uint8_t duty_cycle; // between 0 and 100
-  uint8_t enable_pin; //most recent voltage reading
+  app_pwm_duty_t duty_cycle; // between 0 and 100
+  uint8_t pin; //most recent voltage reading
 };
 
-struct motor * channel_create(uint8_t pin)
+struct motor * create_motor(uint8_t pin)
 {
     struct motor * motor = malloc(sizeof(struct motor));
     if (motor) {
         motor->duty_cycle = 0;
-        motor->enable_pin = pin;
+        motor->pin = pin;
     }
-    return ch;
+    //enable output pin
+    nrf_gpio_cfg_output(pin);
+    return motor;
 }
 
-// sample a particular analog channel in blocking mode
-nrf_saadc_value_t sample_value (uint8_t channel) {
-  nrf_saadc_value_t val;
-  ret_code_t error_code = nrfx_saadc_sample_convert(channel, &val);
-  APP_ERROR_CHECK(error_code);
-  return val;
+void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
+{
+    printf("PWM Initialized\n");
 }
 
-/* Reads ADC code and converts it to a voltage */
-void read_adc_voltage(struct adc_channel * ch) {
-  nrf_saadc_value_t val = sample_value(ch->channel);
-  ch->voltage = val*LSB_SIZE;
-}
-
-void adc_buf_init(struct adc_channel * ch, struct slist * list) {
-  printf("Entering ADC Buf Init\n");
-  for (int i = 0; i < LEN_BUFFER; i++) {
-    read_adc_voltage(ch);
-    printf("%f\n", ch->voltage);
-    slist_add_head(list, (ch->voltage));
-  }
-  printf("Leaving ADC init\n");
-}
-
-void read_and_filter_voltage(struct adc_channel * ch, struct slist * list) {
-  ch->filtered_voltage = 0;
-  // pop a data point off the buffer and read in a new voltage
-  slist_remove_tail(list);
-  read_adc_voltage(ch);
-  slist_add_head(list, (ch->voltage));
-  snode* point = list->head; //variable to keep track of our place in the circ buffer
-  int i = 0;
-  while (point->next != NULL) { //iterate through the whole buffer
-    (ch->filtered_voltage) += TAPS[i] * (point->data);
-    point = point->next;
-    i++;
-  }
-}
-
-/* Converts gravity to an angle */
-void update_angles(struct adc_channel * x_ch, struct adc_channel * y_ch, struct adc_channel * z_ch) {
-  x_ch->g = (x_ch->filtered_voltage - x_ch->bias) / x_ch->sensitivity;
-  y_ch->g = (y_ch->filtered_voltage - y_ch->bias) / y_ch->sensitivity;
-  z_ch->g = (z_ch->filtered_voltage - z_ch->bias) / z_ch->sensitivity;
-
-  x_ch->theta = atan(x_ch->g / sqrt(y_ch->g*y_ch->g + z_ch->g*z_ch->g))/PI*180;
-  y_ch->theta = atan(y_ch->g / sqrt(x_ch->g*x_ch->g + z_ch->g*z_ch->g))/PI*180;
-  z_ch->theta = atan(z_ch->g / sqrt(x_ch->g*x_ch->g + y_ch->g*y_ch->g))/PI*180;
-}
-
-// callback for SAADC events
-void saadc_callback (nrfx_saadc_evt_t const * p_event) {
-  // don't care about adc callbacks
-}
-
-bool sample = false;
-
-void adc_callback() {
-  sample = true;
-}
+/* CODE RESOURCES */
+// https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Flib_pwm.html
+// https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Fgroup__app__pwm.html&anchor=ga0ab3501072119588eb8bea06efe10350
+// https://github.com/xueliu/nRF52/blob/master/nRF52_SDK_0.9.1_3639cc9/components/libraries/pwm/app_pwm.h
 
 int main (void) {
-  ret_code_t error_code = NRF_SUCCESS;
+    ret_code_t error_code = NRF_SUCCESS;
 
-  // initialize RTT library
-  error_code = NRF_LOG_INIT(NULL);
-  APP_ERROR_CHECK(error_code);
-  NRF_LOG_DEFAULT_BACKENDS_INIT();
+    // initialize RTT library
+    error_code = NRF_LOG_INIT(NULL);
+    APP_ERROR_CHECK(error_code);
+    NRF_LOG_DEFAULT_BACKENDS_INIT();
 
-  // initialize analog to digital converter
-  nrfx_saadc_config_t saadc_config = NRFX_SAADC_DEFAULT_CONFIG;
-  saadc_config.resolution = NRF_SAADC_RESOLUTION_12BIT;
-  error_code = nrfx_saadc_init(&saadc_config, saadc_callback);
-  APP_ERROR_CHECK(error_code);
+    // initialization complete
+    printf("Buckler initialized!\n");
 
-  // initialize analog inputs
-  // configure with 0 as input pin for now
+    /* Create Motor Structs */
+    struct motor * flywheel = create_motor(FLYWHEEL_PIN);
+    struct motor * drive = create_motor(DRIVE_PIN);
 
-  error_code = nrfx_saadc_channel_init(Z_CHANNEL, &channel_config);
-  APP_ERROR_CHECK(error_code);
+    /* Initialize PWM0 on TIMER 1 */
+    APP_PWM_INSTANCE(PWM0,1);
+    /* Initialize 2 CH PWM, 200 Hz */
+    app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, flywheel->pin, drive->pin);
+    /* Switch the polarity of the second channel. */
+    // pwm1_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
 
-  // initialization complete
-  printf("Buckler initialized!\n");
+    error_code = app_pwm_init(&PWM0, &pwm1_cfg, pwm_ready_callback);
+    APP_ERROR_CHECK(error_code);
+    app_pwm_enable(&PWM0);
 
-  // Don't forget to initialize your timer library
-  virtual_timer_init();
-  nrf_delay_ms(3000);
-
-  struct adc_channel * x_ch = channel_create(0.3908, 1.4132, X_CHANNEL);
-
-  struct adc_channel * y_ch = channel_create(0.3869, 1.4009, Y_CHANNEL);
-
-  struct adc_channel * z_ch = channel_create(0.3799, 1.4041, Z_CHANNEL);
-
-  // fill up the circular buffers of adc readings
-  adc_buf_init(x_ch, x_list);
-  adc_buf_init(y_ch, y_list);
-  adc_buf_init(z_ch, z_list);
+    /* Set both duty cycles to zero initially, wait until channels are ready */
+    while (app_pwm_channel_duty_set(&PWM0, 0, flywheel->duty_cycle) == NRF_ERROR_BUSY);
+    while (app_pwm_channel_duty_set(&PWM0, 1, drive->duty_cycle) == NRF_ERROR_BUSY);
 
 
-  virtual_timer_start_repeated(125, adc_callback);
+    // loop forever
+    while(1) {
+      for (int i = 0; i<90; i++) {
+          flywheel->duty_cycle = i;
+          drive->duty_cycle = i;
+          while (app_pwm_channel_duty_set(&PWM0, 0, flywheel->duty_cycle) == NRF_ERROR_BUSY);
+          while (app_pwm_channel_duty_set(&PWM0, 1, drive->duty_cycle) == NRF_ERROR_BUSY);
+          nrf_delay_ms(25);
+      }
 
-  // loop forever
-  while(1) {
-    if (complete) { //For collecting data for filter design
-      regular_sampling(); //NUM_SAMPLES defined as a global
-      complete = false;
-    } else { //For calibration
-      // read_adc_voltage(x_ch);
-      // read_adc_voltage(y_ch);
-      // read_adc_voltage(z_ch);
-      read_and_filter_voltage(x_ch, x_list);
-      read_and_filter_voltage(y_ch, y_list);
-      read_and_filter_voltage(z_ch, z_list);
-
-      update_angles(x_ch, y_ch, z_ch);
-
-      printf("Roll: %.4f, Pitch:%.4f, Yaw: %.4f\n", (x_ch->theta), (y_ch->theta), (z_ch->theta));
-      //printf("X:%.4f\n", (x_ch->filtered_voltage)); //(x_ch->filtered_voltage), (y_ch->filtered_voltage),
-      nrf_delay_ms(50);
+      nrf_delay_ms(100);
     }
-  }
 }
