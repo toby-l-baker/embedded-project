@@ -17,8 +17,8 @@ float Kw = 0.0;
 
 //Takes the angle theta the bike makes with the vertical axis, return the motor
 //duty cycle required to correct the error using PID
-float duty_cycle_PID(float theta);
-
+//Returns a number between -100 and 100 to account for direction of rotation
+float duty_cycle_PID(float theta, float time_stamp);
 
 //Resets the integral used in the PID. Takes the current clock time in clock cycles
 void reset_integral(int time_stamp);
