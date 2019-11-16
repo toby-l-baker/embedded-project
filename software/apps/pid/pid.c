@@ -78,10 +78,10 @@ float duty_cycle_PID(float theta, float time_stamp) {
 }
 
 
-float duty_cycle_proportionnal(float theta, float time_stamp) {
+float duty_cycle_proportionnal(float theta) {
 
 	//Compute unbounded duty cycle
-	float duty_cycle = Kp*theta
+	float duty_cycle = Kp*theta;
 
 	//Clip dury cycle to -100 -- 100 interval
 	if (duty_cycle > 100.0f) {duty_cycle = 100.0f;}

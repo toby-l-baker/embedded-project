@@ -5,7 +5,6 @@
 #include <math.h>
 
 
-
 int main() {
 
 	float thetas[6] = {5.0, 4.9, 4.2, 3.1, 1.1, -0.4};
