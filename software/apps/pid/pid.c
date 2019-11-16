@@ -46,6 +46,10 @@ float duty_cycle_PID(float theta, float time_stamp) {
 	if (duty_cycle > 100.0f) {duty_cycle = 100.0f;}
 	if (duty_cycle < -100.0f) {duty_cycle = -100.0f;}
 
+	//Update last values
+	last_theta = theta;
+	last_timestamp = time_stamp;
+
 	return duty_cycle;
 
 }
