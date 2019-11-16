@@ -21,20 +21,21 @@
 
 
 
-
-
 int main() {
 	angles_t angles;
 	angles.theta_x = 1;
 
 	init_accelerometers();
+	int i = 0;
 
 	while(1) {
+		i+=1;
 		update_angles_struct(&angles);
-		nrf_delay_ms(50);
+		
 		printf("%f    ",angles.theta_x);
+		printf("%f\n", duty_cycle_PID(angles.theta_x, i));
 
-		printf("%f\n", duty_cycle_proportionnal(angles.theta_x));
+		nrf_delay_ms(50);
 	}
 	return 0;
 }

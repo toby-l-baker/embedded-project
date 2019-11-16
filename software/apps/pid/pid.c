@@ -8,7 +8,7 @@ float Kp = -1.0;
 float Kd = 1.0;
 
 //Integral constant
-float Ki = -1.0;
+float Ki = -0.01;
 
 //Antiwindup constant (use it?)
 float Kw = 0.0;
