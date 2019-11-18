@@ -35,7 +35,7 @@ int main() {
 	angles.theta_x = 1;
 
 	init_accelerometers();
-
+	/*
 	
 	APP_PWM_INSTANCE(PWM0,1);
 	struct motor * flywheel = create_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, PWM_CHANNEL_0, &PWM0);
@@ -67,18 +67,19 @@ int main() {
 
 	set_motor_direction(flywheel, FORWARD);
 	set_motor_pwm(flywheel, 50);
-	
-	
+
+	*/
 
 	while(1) {
-		printf("Test");
 		//set_motor_direction(flywheel, FORWARD);
 		//set_motor_pwm(flywheel, 50);
-		/*
+		
 		update_angles_struct(&angles);
 		
 
 		printf("%f\n",angles.theta_x);
+		
+		/*
 		float duty_cycle = duty_cycle_proportionnal(angles.theta_x);
 		uint8_t direction = STOP;
 		uint8_t duty_cycle_int = 0;
