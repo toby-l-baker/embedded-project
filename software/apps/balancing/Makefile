@@ -11,8 +11,10 @@ APP_HEADER_PATHS += .
 APP_SOURCE_PATHS += .
 APP_SOURCE_PATHS += ../sensors_reading/
 APP_SOURCE_PATHS += ../pid/
+APP_SOURCE_PATHS += ../motor_driver/
 APP_SOURCES = $(notdir $(wildcard ./*.c))
 APP_SOURCES += $(notdir $(wildcard ../sensors_reading/*.c))
+APP_SOURCES += $(notdir $(wildcard ../motor_driver/*.c))
 APP_SOURCES += $(notdir $(wildcard ../pid/*.c))
 
 # Path to base of nRF52-base repo

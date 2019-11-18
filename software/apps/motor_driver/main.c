@@ -22,6 +22,8 @@
 
 #include "buckler.h"
 
+
+
 #define FORWARD				1
 #define BACKWARD			-1
 #define STOP				0
@@ -43,6 +45,7 @@
 
 
 /* Struct for storing information about each ADC Channel */
+
 struct motor
 {
   int8_t direction;
@@ -95,20 +98,28 @@ void set_motor_direction(struct motor * motor, int8_t direction){
 			break;
 	}
 }
+
+
 void set_motor_pwm(struct motor * motor, uint8_t duty_cycle){
 	motor->duty_cycle = duty_cycle;
 	while (app_pwm_channel_duty_set(motor->pwm_inst, motor->pwm_channel, motor->duty_cycle) == NRF_ERROR_BUSY);
 }
+
+
 
 void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
 {
     printf("PWM Initialized\n");
 }
 
+
+
 /* CODE RESOURCES */
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Flib_pwm.html
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Fgroup__app__pwm.html&anchor=ga0ab3501072119588eb8bea06efe10350
 // https://github.com/xueliu/nRF52/blob/master/nRF52_SDK_0.9.1_3639cc9/components/libraries/pwm/app_pwm.h
+
+
 
 int main (void) {
     ret_code_t error_code = NRF_SUCCESS;
@@ -148,6 +159,7 @@ int main (void) {
     while (app_pwm_channel_duty_set(&PWM0, 0, flywheel->duty_cycle) == NRF_ERROR_BUSY);
     while (app_pwm_channel_duty_set(&PWM0, 1, drive->duty_cycle) == NRF_ERROR_BUSY);
     set_motor_direction(drive, STOP);
+    set_motor_direction(drive, BACKWARD);
 
 
     // loop forever
