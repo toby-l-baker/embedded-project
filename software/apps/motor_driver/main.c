@@ -23,14 +23,10 @@
 #include "buckler.h"
 #include "motor_driver.h"
 
-
-
 /* CODE RESOURCES */
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Flib_pwm.html
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Fgroup__app__pwm.html&anchor=ga0ab3501072119588eb8bea06efe10350
 // https://github.com/xueliu/nRF52/blob/master/nRF52_SDK_0.9.1_3639cc9/components/libraries/pwm/app_pwm.h
-APP_PWM_INSTANCE(PWM0,1);
-
 
 int main (void) {
     ret_code_t error_code = NRF_SUCCESS;
@@ -51,39 +47,25 @@ int main (void) {
 	// 	nrf_delay_ms(25);
 	// }
     /* Initialize PWM0 on TIMER 1 */
-    
-
-    printf("Test\n");
+    APP_PWM_INSTANCE(PWM0,1);
 
     struct motor * flywheel = create_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, PWM_CHANNEL_0, &PWM0);
     struct motor * drive = create_motor(DRIVE_PIN_ENABLE, DRIVE_PIN_IN1, DRIVE_PIN_IN2, PWM_CHANNEL_1, &PWM0);
-    
-    printf("Test2\n");
-
     nrf_gpio_pin_set(drive->in1);
     nrf_gpio_pin_clear(drive->in2);
     /* Initialize 2 CH PWM, 200 Hz */
     app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, flywheel->enable, drive->enable);
-
-    printf("Test3\n");
-  
     /* Switch the polarity of the second channel. */
     //pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
 
     error_code = app_pwm_init(&PWM0, &pwm1_cfg, pwm_ready_callback);
-
-    printf("Test4\n");
-
     APP_ERROR_CHECK(error_code);
-      
     app_pwm_enable(&PWM0);
 
     /* Set both duty cycles to zero initially, wait until channels are ready */
     while (app_pwm_channel_duty_set(&PWM0, 0, flywheel->duty_cycle) == NRF_ERROR_BUSY);
     while (app_pwm_channel_duty_set(&PWM0, 1, drive->duty_cycle) == NRF_ERROR_BUSY);
     set_motor_direction(drive, STOP);
-    set_motor_direction(drive, BACKWARD);
-
 
     // loop forever
     while(1) {
