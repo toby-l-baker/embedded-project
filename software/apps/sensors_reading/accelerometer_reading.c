@@ -100,7 +100,7 @@ void adc_buf_init(struct adc_channel * ch, struct slist * list) {
   printf("Entering ADC Buf Init\n");
   for (int i = 0; i < LEN_BUFFER; i++) {
     read_adc_voltage(ch);
-    printf("%f\n", ch->voltage);
+    //printf("%f\n", ch->voltage);
     slist_add_head(list, (ch->voltage));
   }
   printf("Leaving ADC init\n");
@@ -177,12 +177,8 @@ void regular_sampling() {
 }
 
 void init_accelerometers() {
-  ret_code_t error_code = NRF_SUCCESS;
 
-  // initialize RTT library
-  error_code = NRF_LOG_INIT(NULL);
-  APP_ERROR_CHECK(error_code);
-  NRF_LOG_DEFAULT_BACKENDS_INIT();
+  ret_code_t error_code = NRF_SUCCESS;
 
   // initialize analog to digital converter
   saadc_config.resolution = NRF_SAADC_RESOLUTION_12BIT;
@@ -199,7 +195,7 @@ void init_accelerometers() {
   error_code = nrfx_saadc_channel_init(X_CHANNEL, &channel_config);
   APP_ERROR_CHECK(error_code);
 
-  // specify input pin and initialize that ADC channel
+  // specify input pin and ini  ret_code_t error_code = NRF_SUCCESS;tialize that ADC channel
   channel_config.pin_p = BUCKLER_ANALOG_ACCEL_Y;
   error_code = nrfx_saadc_channel_init(Y_CHANNEL, &channel_config);
   APP_ERROR_CHECK(error_code);

@@ -21,89 +21,7 @@
 #include "app_pwm.h"
 
 #include "buckler.h"
-
-#define FORWARD				1
-#define BACKWARD			-1
-#define STOP				0
-
-#define PWM_CHANNEL_0 		0
-#define PWM_CHANNEL_1		1
-
-#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,19)
-#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,20)
-#define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,22)
-
-#define DRIVE_PIN_ENABLE NRF_GPIO_PIN_MAP(0,23)
-#define DRIVE_PIN_IN1 NRF_GPIO_PIN_MAP(0,24)
-#define DRIVE_PIN_IN2 NRF_GPIO_PIN_MAP(0,25)
-
-#define ENCODER_CH_A NRF_GPIO_PIN_MAP(0,20) //using BUCKLER_SENSORS_SDA
-#define ENCODER_CH_B NRF_GPIO_PIN_MAP(0,7) //using BUCKLER_IMU_INTERUPT
-
-
-
-/* Struct for storing information about each ADC Channel */
-struct motor
-{
-  int8_t direction;
-  app_pwm_duty_t duty_cycle; // between 0 and 100
-  uint8_t enable; //most recent voltage reading
-  uint8_t in1;
-  uint8_t in2;
-  uint8_t pwm_channel;
-  app_pwm_t* pwm_inst;
-};
-
-struct motor * create_motor(uint8_t enable, uint8_t in1, uint8_t in2, uint8_t pwm_channel, app_pwm_t const * const pwm_inst)
-{
-    struct motor * motor = malloc(sizeof(struct motor));
-    if (motor) {
-        motor->duty_cycle = 0;
-        motor->enable = enable;
-        motor->in1 = in1;
-        motor->in2 = in2;
-        motor->pwm_channel = pwm_channel;
-        motor->pwm_inst = pwm_inst;
-        nrf_gpio_cfg_output(enable);
-        nrf_gpio_cfg_output(in1);
-        nrf_gpio_cfg_output(in2);
-        
-    }
-    return motor;
-    
-}
-
-void set_motor_direction(struct motor * motor, int8_t direction){
-	switch(direction){
-		case FORWARD:
-			motor->direction = FORWARD;
-			nrf_gpio_pin_set(motor->in1);
-			nrf_gpio_pin_clear(motor->in2);
-			break;
-		case BACKWARD:
-			motor->direction = BACKWARD;
-			nrf_gpio_pin_set(motor->in2);
-			nrf_gpio_pin_clear(motor->in1);
-			break;
-		case STOP:
-			motor->direction = STOP;
-			nrf_gpio_pin_clear(motor->in1);
-			nrf_gpio_pin_clear(motor->in2);
-			break;
-		default:
-			printf("ERROR: incorrect motor direction\n");
-			break;
-	}
-}
-void set_motor_pwm(struct motor * motor, uint8_t duty_cycle){
-	motor->duty_cycle = duty_cycle;
-	while (app_pwm_channel_duty_set(motor->pwm_inst, motor->pwm_channel, motor->duty_cycle) == NRF_ERROR_BUSY);
-}
-
-void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
-{
-    printf("PWM Initialized\n");
-}
+#include "motor_driver.h"
 
 /* CODE RESOURCES */
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Flib_pwm.html
@@ -148,7 +66,6 @@ int main (void) {
     while (app_pwm_channel_duty_set(&PWM0, 0, flywheel->duty_cycle) == NRF_ERROR_BUSY);
     while (app_pwm_channel_duty_set(&PWM0, 1, drive->duty_cycle) == NRF_ERROR_BUSY);
     set_motor_direction(drive, STOP);
-
 
     // loop forever
     while(1) {
