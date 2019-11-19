@@ -95,10 +95,7 @@ int main (void) {
 
 	    
     // }
-    nrf_delay_ms(1000);
-    set_motor_direction(flywheel, FORWARD);
-    set_motor_pwm(flywheel, 50);
-    printf("asdfasdfsadf\n");
+ 
 	
 	// nrf_delay_ms(2000);
     printf("Setting up sensors...\n");
@@ -120,19 +117,19 @@ int main (void) {
       //     nrf_delay_ms(100);
       // }
     	update_angles_struct(angles);
-    	duty_cycle = (int)duty_cycle_proportionnal(angles->theta_x);
+    	duty_cycle = (int)duty_cycle_proportionnal(angles->theta_y);
     	// printf("Duty Cycle: %i\n", duty_cycle);
     	if (duty_cycle == 0){
-    		set_motor_pwm(flywheel, 0);
     		set_motor_direction(flywheel, STOP);
+    		set_motor_pwm(flywheel, 0);
     	}
     	else if (duty_cycle < 0){
-    		set_motor_pwm(flywheel, (uint8_t)(abs(duty_cycle)));
     		set_motor_direction(flywheel, REVERSE);	
+    		set_motor_pwm(flywheel, (uint8_t)(abs(duty_cycle)));
     	}
     	else if (duty_cycle > 0){
+    		set_motor_direction(flywheel, FORWARD);
     		set_motor_pwm(flywheel, duty_cycle);
-    		set_motor_direction(flywheel, FORWARD);	
     	}
     	
     	

@@ -26,6 +26,7 @@ struct motor * create_motor(uint8_t enable, uint8_t in1, uint8_t in2, uint8_t pw
 }
 
 void set_motor_direction(struct motor * motor, int8_t direction){
+    motor->direction = direction;
     switch(direction){
         case FORWARD:
             motor->direction = FORWARD;
