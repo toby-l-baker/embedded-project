@@ -48,7 +48,7 @@ static simple_ble_config_t ble_config = {
 
 //4607eda0-f65e-4d59-a9ff-84420d87a4ca
 //stored in little endian
-static simple_ble_service_t robot_service = {{
+static simple_ble_service_t bike_srv = {{
     .uuid128 = {0xca,0xa4,0x87,0x0d,0x42,0x84,0xff,0xA9,
                 0x59,0x4D,0x5e,0xf6,0xa0,0xed,0x07,0x46}
 }};
@@ -67,8 +67,8 @@ uint8_t turn_angle=0;
 
 simple_ble_app_t* simple_ble_app;
 
-enum bike_states bike_state;
-enum autonomous_states auto_state;
+bike_states bike_state;
+autonomous_states auto_state;
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: logic for each characteristic and related state changes
@@ -87,42 +87,25 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
         bike_state = OFF;
       }
     }
-
-    else if (simple_ble_is_char_event(p_ble_evt, &drive_char))
-    {
-
-      if (left) {
-        display_write("Left", DISPLAY_LINE_0);
-        driveMotor = -50;
-        servoMotor = 50;
-      }
-    }
-
-    else if (simple_ble_is_char_event(p_ble_evt, &right_char))
-    {
-
-      if (right) {
-        display_write("Right", DISPLAY_LINE_0);
-        driveMotor = 50;
-        servoMotor = -50;
-      }
-    }
-
-    else
-    {
-      display_write("STOP", DISPLAY_LINE_0);
-      driveMotor = 0;
-      servoMotor = 0;
-    }
-
 }
 
-void print_state(states current_state){
+void print_state(bike_states current_state){
 	switch(current_state){
-	case OFF:
-		display_write("OFF", DISPLAY_LINE_0);
-		break;
+  	case OFF: {
+  		printf("Off\n");
+  		break;
     }
+
+    case MANUAL: {
+  		printf("Manual\n");
+  		break;
+    }
+
+    case AUTONOMOUS: {
+  		printf("Autonomous\n");
+  		break;
+    }
+  }
 }
 
 int main(void) {
@@ -137,9 +120,7 @@ int main(void) {
   // Setup BLE
   simple_ble_app = simple_ble_init(&ble_config);
 
-  simple_ble_add_service(&robot_service);
-
-  // TODO: Register your characteristics
+  simple_ble_add_service(&bike_srv);
 
   // Start Advertising
   simple_ble_adv_only_name();
@@ -177,53 +158,62 @@ int main(void) {
   mpu9250_init(&twi_mngr_instance);
   printf("IMU initialized!\n");
 
-  // initialize Kobuki
-  kobukiInit();
-  printf("Kobuki initialized!\n");
-
-  states state = OFF;
-
-  // Setup BLE
+  simple_ble_add_characteristic(1, 1, 0, 0,
+      sizeof(manual_control), (uint8_t*)&manual_control,
+      &bike_srv, &manual_char);
 
   simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(forward), (uint8_t*)&forward,
-      &robot_service, &forward_char);
+      sizeof(power), (uint8_t*)&power,
+      &bike_srv, &power_char);
 
   simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(backward), (uint8_t*)&backward,
-      &robot_service, &backward_char);
+      sizeof(drive_speed), (uint8_t*)&drive_speed,
+      &bike_srv, &drive_char);
 
   simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(left), (uint8_t*)&left,
-      &robot_service, &left_char);
-
-  simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(right), (uint8_t*)&right,
-      &robot_service, &right_char);
-
-  display_write("HELLO", DISPLAY_LINE_0);
+      sizeof(turn_angle), (uint8_t*)&turn_angle,
+      &bike_srv, &turn_char);
 
   // loop forever, running state machine
   while (1) {
     // read sensors from robot
-    //int status = kobukiSensorPoll(&sensors);
-    kobukiDriveDirect(driveMotor, servoMotor);
     // TODO: complete state machine
-    // switch(state) {
-    //   case OFF: {
-    //     print_state(state);
+    switch(bike_state) {
 
-    //     // transition logic
-    //     if (is_button_pressed(&sensors)) {
-    //       //state = NEWSTATE;
-    //     } else {
-    //       state = OFF;
-    //       // perform state-specific actions here
-    //       kobukiDriveDirect(0, 0);
-    //     }
-    //     break; // each case needs to end with break!
-    //   }
-    // }
-    //nrf_delay(10);
+      /*** BIKE OFF, ONLY BALANCING ***/
+      case OFF: {
+        print_state(bike_state); //display_write("OFF", DISPLAY_LINE_0);
+        // transition logic handled by ble_evt_write
+        break; // each case needs to end with break!
+      }
+
+      /*** MANUAL CONTROL OF THE BIKE ***/
+      case MANUAL: {
+        print_state(bike_state);
+        // move with an angle and speed determined by the joystick
+        break;
+      }
+
+      /*** AUTOOMOUS CONTROL OF THE BIKE ***/
+      case AUTONOMOUS: {
+        print_state(bike_state);
+        switch(auto_state){
+          /*** GET THE PATH FOR THE BIKE TO AUTONOMOUSLY FOLLOW ***/
+          case GET_PATH: {
+            //Integrate the joystick to get a vector
+            printf("Getting path\n");
+            break;
+          }
+          /*** FOLLOW THE SET PATH ***/
+          case DRIVE: {
+            //Get to our goal!!
+            printf("Navigating to path\n");
+            break;
+          }
+        }
+        break;
+      }
+    }
+    nrf_delay_ms(10);
   }
 }

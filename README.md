@@ -1,5 +1,7 @@
 # embedded-project
 Using a Flywheel to Balance a bike and drive it with a BLE remote.
 
-# to use this repository first follow this guide here
-https://github.com/brghena/buckler-external-repo
+# Install
+To use this repository first clone the directory. Following that run:
+git submodule update --recursive --init
+

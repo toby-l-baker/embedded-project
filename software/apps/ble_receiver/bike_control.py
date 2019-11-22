@@ -14,29 +14,29 @@ if len(addr) != 17:
     raise ValueError("Invalid address supplied")
 
 SERVICE_UUID = "4607eda0-f65e-4d59-a9ff-84420d87a4ca"
-CHAR_UUIDS = ["4607eda1-f65e-4d59-a9ff-84420d87a4ca", 
-            "4607eda2-f65e-4d59-a9ff-84420d87a4ca", 
-            "4607eda3-f65e-4d59-a9ff-84420d87a4ca", 
+CHAR_UUIDS = ["4607eda1-f65e-4d59-a9ff-84420d87a4ca",
+            "4607eda2-f65e-4d59-a9ff-84420d87a4ca",
+            "4607eda3-f65e-4d59-a9ff-84420d87a4ca",
             "4607eda4-f65e-4d59-a9ff-84420d87a4ca"]# TODO: add your characteristics
 
-class RobotController():
+class BikeController():
 
     def __init__(self, address):
 
-        self.robot = Peripheral(addr)
+        self.bike = Peripheral(addr)
         print("connected")
 
         # keep state for keypresses
         self.pressed = {"up": False, "down": False, "right": False, "left": False}
         # TODO get service from robot
-        sv = self.robot.getServiceByUUID(SERVICE_UUID)
+        sv = self.bike.getServiceByUUID(SERVICE_UUID)
 
         # TODO get characteristic handles from service/robot
-        self.forward = sv.getCharacteristics(CHAR_UUIDS[0])[0]
-        self.backward = sv.getCharacteristics(CHAR_UUIDS[1])[0]
-        self.left = sv.getCharacteristics(CHAR_UUIDS[2])[0]
-        self.right = sv.getCharacteristics(CHAR_UUIDS[3])[0]
-        
+        self.manual_char = sv.getCharacteristics(CHAR_UUIDS[0])[0]
+        self.power_char = sv.getCharacteristics(CHAR_UUIDS[1])[0]
+        self.drive_char = sv.getCharacteristics(CHAR_UUIDS[2])[0]
+        self.turn_char = sv.getCharacteristics(CHAR_UUIDS[3])[0]
+
         # TODO enable notifications if using notifications
 
         keyboard.hook(self.on_key_event)
@@ -54,39 +54,39 @@ class RobotController():
                 # set state of key to pressed
                 self.pressed[event.name] = True
                 # TODO write to characteristic to change direction
-                self.forward.write(bytes([True]))
+                self.manual_char.write(bytes([True]))
             if event.name == "down":
                 if self.pressed[event.name]: return
                 # set state of key to pressed
                 self.pressed[event.name] = True
                 # TODO write to characteristic to change direction
-                self.backward.write(bytes([True]))
+                self.power_char.write(bytes([True]))
             if event.name == "left":
                 if self.pressed[event.name]: return
                 # set state of key to pressed
                 self.pressed[event.name] = True
                 # TODO write to characteristic to change direction
-                self.left.write(bytes([True]))
+                self.drive_char.write(bytes([True]))
             if event.name == "right":
                 if self.pressed[event.name]: return
                 # set state of key to pressed
                 self.pressed[event.name] = True
                 # TODO write to characteristic to change direction
-                self.right.write(bytes([True]))
+                self.turn_char.write(bytes([True]))
         else:
             # set state of key to released
             self.pressed[event.name] = False
             # TODO write to characteristic to stop moving in this direction
-            self.forward.write(bytes([False]))
-            self.backward.write(bytes([False]))
-            self.left.write(bytes([False]))
-            self.right.write(bytes([False]))
+            self.manual_char.write(bytes([False]))
+            self.power_char.write(bytes([False]))
+            self.drive_char.write(bytes([False]))
+            self.turn_char.write(bytes([False]))
 
 
     def __enter__(self):
         return self
     def __exit__(self, exc_type, exc_value, traceback):
-        self.robot.disconnect()
+        self.bike.disconnect()
 
-with RobotController(addr) as robot:
+with BikeController(addr) as bike:
     getpass('Use arrow keys to control robot')
