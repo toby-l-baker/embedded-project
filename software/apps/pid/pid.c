@@ -1,17 +1,21 @@
 #include "pid.h"
 #include <stdio.h>
+#include "math.h"
 
 //Proportional control
-float Kp = -1.0;
+float Kp = -20.0;
 
 //Derivative constant
-float Kd = 1.0;
+float Kd = -100;
 
 //Integral constant
-float Ki = -0.01;
+float Ki = 0.0;
 
 //Antiwindup constant (use it?)
 float Kw = 0.0;
+
+//Minimal duty cycle to have the motor turn
+float MIN_DUTY_CYCLE = 20.0;
 
 
 //Computation intermediaries
@@ -51,7 +55,7 @@ float compute_derivative(float theta, int time_stamp) {
 	return derivative;
 }
 
-float duty_cycle_PID(float theta, float time_stamp) {
+float signed_duty_cycle_PID(float theta, float time_stamp) {
 
 	//Check that integral, derivative are initialized
 	if (last_timestamp < 0.0) {
@@ -78,16 +82,49 @@ float duty_cycle_PID(float theta, float time_stamp) {
 }
 
 
-float duty_cycle_proportionnal(float theta) {
+void duty_cycle_PID(float theta, float time_stamp, uint8_t* duty_cycle, int8_t* direction) {
+	
+	float signed_duty_cycle = signed_duty_cycle_PID(theta, time_stamp);
+
+	if (signed_duty_cycle > 0.0) {
+		*duty_cycle = (uint8_t) signed_duty_cycle;
+		*direction = FORWARD;
+	} else {
+		*duty_cycle = (uint8_t) (-signed_duty_cycle);
+		*direction = BACKWARD;
+	}
+}
+
+float signed_duty_cycle_proportionnal(float theta) {
 
 	//Compute unbounded duty cycle
 	float duty_cycle = Kp*theta;
 
+
 	//Clip dury cycle to -100 -- 100 interval
-	if (duty_cycle > 100.0f) {duty_cycle = 100.0f;}
-	if (duty_cycle < -100.0f) {duty_cycle = -100.0f;}
+
+	if (duty_cycle > 0.0f) {
+		duty_cycle = MIN_DUTY_CYCLE + duty_cycle * (100.0 - MIN_DUTY_CYCLE)/100.0;
+		if (duty_cycle > 100.0f) {duty_cycle = 100.0f;}
+		return duty_cycle;
+	} else {
+		duty_cycle = - MIN_DUTY_CYCLE + duty_cycle * (100.0 - MIN_DUTY_CYCLE)/100.0;
+		if (duty_cycle < -100.0f) {duty_cycle = -100.0f;}
+		return duty_cycle;
+	}
+}
+
+void duty_cycle_proportionnal(float theta, uint8_t* duty_cycle, int8_t* direction) {
+
+	float signed_duty_cycle = signed_duty_cycle_proportionnal(theta);
 
 
-	return duty_cycle;
+	if (signed_duty_cycle > 0.0) {
+		*duty_cycle = (uint8_t) signed_duty_cycle;
+		*direction = FORWARD;
+	} else {
+		*duty_cycle = (uint8_t) (-signed_duty_cycle);
+		*direction = BACKWARD;
+	}
 
 }

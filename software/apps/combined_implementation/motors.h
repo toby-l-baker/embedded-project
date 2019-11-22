@@ -54,6 +54,7 @@ struct motor
   app_pwm_t* pwm_inst;
 };
 
+struct motor * create_motor(uint8_t enable, uint8_t in1, uint8_t in2, uint8_t pwm_channel, app_pwm_t const * const pwm_inst);
 void set_motor_direction(struct motor * motor, int8_t direction);
 void set_motor_pwm(struct motor * motor, uint8_t duty_cycle);
 void pwm_ready_callback(uint32_t pwm_id);

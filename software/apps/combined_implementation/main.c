@@ -104,7 +104,9 @@ int main (void) {
     set_motor_direction(flywheel, FORWARD);
 
     
-    int duty_cycle = 0;
+    uint8_t duty_cycle = 0;
+    int8_t direction = STOP;
+
     printf("Going into main....\n");
     while(1) {
       // for (int i = 0; i<100; i++) {
@@ -117,21 +119,10 @@ int main (void) {
       //     nrf_delay_ms(100);
       // }
     	update_angles_struct(angles);
-    	duty_cycle = (int)duty_cycle_proportionnal(angles->theta_y);
-    	// printf("Duty Cycle: %i\n", duty_cycle);
-    	if (duty_cycle == 0){
-    		set_motor_direction(flywheel, STOP);
-    		set_motor_pwm(flywheel, 0);
-    	}
-    	else if (duty_cycle < 0){
-    		set_motor_direction(flywheel, REVERSE);	
-    		set_motor_pwm(flywheel, (uint8_t)(abs(duty_cycle)));
-    	}
-    	else if (duty_cycle > 0){
-    		set_motor_direction(flywheel, FORWARD);
-    		set_motor_pwm(flywheel, duty_cycle);
-    	}
-    	
+    	duty_cycle_proportionnal(angles->theta_y, &duty_cycle, &direction);
+        printf("Direction %d\n", direction);
+    	set_motor_direction(flywheel, direction);
+    	set_motor_pwm(flywheel, duty_cycle);
     	
     	nrf_delay_ms(1);
 
