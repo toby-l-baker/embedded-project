@@ -3,7 +3,7 @@
 #include "math.h"
 
 //Proportional control
-float Kp = -20.0;
+float Kp = -6.0;
 
 //Derivative constant
 float Kd = -100;
@@ -15,9 +15,8 @@ float Ki = 0.0;
 float Kw = 0.0;
 
 //Minimal duty cycle to have the motor turn
-float MIN_DUTY_CYCLE = 20.0;
+float MIN_DUTY_CYCLE = 15.0;
 
-float MIN_REACTION_ANGLE = 1.0;
 
 
 //Computation intermediaries
@@ -89,12 +88,6 @@ void duty_cycle_PID(float theta, float time_stamp, uint8_t* duty_cycle, int8_t* 
 	float signed_duty_cycle = signed_duty_cycle_PID(theta, time_stamp);
 
 
-	if (abs(signed_duty_cycle) > MIN_REACTION_ANGLE) {
-		*duty_cycle = 0;
-		*direction = STOP;
-		return;
-	}
-	
 	if (signed_duty_cycle > 0.0) {
 		*duty_cycle = (uint8_t) signed_duty_cycle;
 		*direction = FORWARD;
@@ -127,11 +120,6 @@ void duty_cycle_proportionnal(float theta, uint8_t* duty_cycle, int8_t* directio
 
 	float signed_duty_cycle = signed_duty_cycle_proportionnal(theta);
 
-	if (abs(signed_duty_cycle) > MIN_REACTION_ANGLE) {
-		*duty_cycle = 0;
-		*direction = STOP;
-		return;
-	}
 
 	if (signed_duty_cycle > 0.0) {
 		*duty_cycle = (uint8_t) signed_duty_cycle;

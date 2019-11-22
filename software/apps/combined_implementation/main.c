@@ -119,7 +119,10 @@ int main (void) {
       //     nrf_delay_ms(100);
       // }
     	update_angles_struct(angles);
-    	duty_cycle_proportionnal(angles->theta_y, &duty_cycle, &direction);
+        if (abs(angles->theta_y) > 15) {
+    	   duty_cycle_proportionnal(angles->theta_y, &duty_cycle, &direction);
+        }
+
         printf("Direction %d\n", direction);
     	set_motor_direction(flywheel, direction);
     	set_motor_pwm(flywheel, duty_cycle);

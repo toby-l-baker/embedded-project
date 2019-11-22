@@ -34,6 +34,9 @@
 #define NUM_SAMPLES 4096
 #define LEN_BUFFER 30
 
+#define CLOCK_SPEED 16000000.0
+#define PRESCALER_VALUE 512.0
+
 
 //Buckler stuff
 nrf_saadc_channel_config_t channel_config = NRFX_SAADC_DEFAULT_CHANNEL_CONFIG_SE(0);
@@ -176,6 +179,17 @@ void regular_sampling() {
   printf("Completed Printing Samples\n");
 }
 
+
+void init_clock_time() {
+  NRF_TIMER4->MODE          = 0;    //Timer not counter
+  NRF_TIMER4->BITMODE       = 3; //32 bits
+  NRF_TIMER4->PRESCALER     = 9; //31 250 Hz
+  NRF_TIMER4->TASKS_CLEAR   = 1; //Reset value to 0
+  NRF_TIMER4->TASKS_START   = 1;
+  printf("Clock time initialized\n");
+  return;
+}
+
 void init_accelerometers() {
 
   ret_code_t error_code = NRF_SUCCESS;
@@ -222,8 +236,15 @@ void init_accelerometers() {
   adc_buf_init(y_ch, y_list);
   adc_buf_init(z_ch, z_list);
 
-  // Write headers
-  printf("%s\n","X (V), Y (V), Z (V), X_F (V), Y_F (V), Z_F (V)");
+  init_clock_time();
+}
+
+float read_clock_time() {
+  NRF_TIMER4->TASKS_CAPTURE[1] = 1;
+  uint32_t time_stamp_int = NRF_TIMER4->CC[1];
+  float time_stamp = ((float) time_stamp_int) / (CLOCK_SPEED / PRESCALER_VALUE);
+  return time_stamp;
+
 }
 
 void update_angles_struct(angles_t* angles) {
@@ -236,6 +257,8 @@ void update_angles_struct(angles_t* angles) {
   angles->theta_x = x_ch->theta;
   angles->theta_y = y_ch->theta;
   angles->theta_z = z_ch->theta;
+  angles->time_stamp = read_clock_time();
+
   return;
 
 }
