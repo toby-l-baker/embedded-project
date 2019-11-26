@@ -159,6 +159,7 @@ void regular_sampling() {
   printf("Completed Printing Samples\n");
 }
 
+
 int main (void) {
   ret_code_t error_code = NRF_SUCCESS;
 
@@ -225,6 +226,17 @@ int main (void) {
   }
 
   // loop forever
+  float accum = 0;
+  int i = 0;
+  while(1) {
+    read_adc_voltage(y_ch);
+    accum += y_ch->voltage;
+    printf("Voltage: %f\n", accum/(i++));
+    nrf_delay_ms(10);
+
+  }
+
+
   while(1) {
     if (complete) { //For collecting data for filter design
       regular_sampling(); //NUM_SAMPLES defined as a global
@@ -241,7 +253,7 @@ int main (void) {
 
       printf("Roll: %.4f, Pitch:%.4f, Yaw: %.4f\n", (x_ch->theta), (y_ch->theta), (z_ch->theta));
       //printf("X:%.4f\n", (x_ch->filtered_voltage)); //(x_ch->filtered_voltage), (y_ch->filtered_voltage),
-      nrf_delay_ms(50);
+      nrf_delay_ms(5);
     }
   }
 }

@@ -26,6 +26,9 @@
 #include "accelerometer_reading.h"
 #include "pid.h"
 
+#define MIN_ANGLE 0.0
+#define EQ_ANGLE 2
+
 /* CODE RESOURCES */
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Flib_pwm.html
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Fgroup__app__pwm.html&anchor=ga0ab3501072119588eb8bea06efe10350
@@ -119,15 +122,17 @@ int main (void) {
       //     nrf_delay_ms(100);
       // }
     	update_angles_struct(angles);
-        if (abs(angles->theta_y) > 15) {
-    	   duty_cycle_proportionnal(angles->theta_y, &duty_cycle, &direction);
+        if (abs(angles->theta_y - EQ_ANGLE) > MIN_ANGLE) {
+    	   duty_cycle_PID(angles->theta_y - EQ_ANGLE, angles->time_stamp, &duty_cycle, &direction);
         }
 
+        printf("Angle %f\n", angles->theta_y - EQ_ANGLE);
         printf("Direction %d\n", direction);
+        printf("Duty cycle %d\n", duty_cycle);
     	set_motor_direction(flywheel, direction);
     	set_motor_pwm(flywheel, duty_cycle);
     	
-    	nrf_delay_ms(1);
+    	nrf_delay_ms(50);
 
       
     }

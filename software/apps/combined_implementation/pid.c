@@ -3,7 +3,7 @@
 #include "math.h"
 
 //Proportional control
-float Kp = -6.0;
+float Kp = -0.15;
 
 //Derivative constant
 float Kd = -100;
@@ -15,7 +15,8 @@ float Ki = 0.0;
 float Kw = 0.0;
 
 //Minimal duty cycle to have the motor turn
-float MIN_DUTY_CYCLE = 15.0;
+float MIN_DUTY_CYCLE = 0;
+
 
 
 
@@ -56,7 +57,7 @@ float compute_derivative(float theta, int time_stamp) {
 	return derivative;
 }
 
-float signed_duty_cycle_PID(float theta, float time_stamp) {
+float signed_torque_PID(float theta, float time_stamp) {
 
 	//Check that integral, derivative are initialized
 	if (last_timestamp < 0.0) {
@@ -66,60 +67,56 @@ float signed_duty_cycle_PID(float theta, float time_stamp) {
 	}
 
 	//Compute unbounded duty cycle
-	float duty_cycle = Kp*theta;
-	duty_cycle += Kd*compute_derivative(theta, time_stamp);
-	duty_cycle += Ki*update_integral(theta, time_stamp);
+	float signed_torque = Kp*theta;
+	signed_torque += Kd*compute_derivative(theta, time_stamp);
+	signed_torque += Ki*update_integral(theta, time_stamp);
 
-	//Clip dury cycle to -100 -- 100 interval
-	if (duty_cycle > 100.0f) {duty_cycle = 100.0f;}
-	if (duty_cycle < -100.0f) {duty_cycle = -100.0f;}
 
 	//Update last values
 	last_theta = theta;
 	last_timestamp = time_stamp;
 
-	return duty_cycle;
+	return signed_torque;
 
 }
 
 
 void duty_cycle_PID(float theta, float time_stamp, uint8_t* duty_cycle, int8_t* direction) {
 	
-	float signed_duty_cycle = signed_duty_cycle_PID(theta, time_stamp);
-
+	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
+	float signed_torque = signed_torque_PID(theta, time_stamp);
+	float signed_duty_cycle = signed_current_dc + signed_torque;
 
 	if (signed_duty_cycle > 0.0) {
 		*duty_cycle = (uint8_t) signed_duty_cycle;
 		*direction = FORWARD;
+		return;
 	} else {
 		*duty_cycle = (uint8_t) (-signed_duty_cycle);
 		*direction = BACKWARD;
+		return;
 	}
+
+
 }
 
-float signed_duty_cycle_proportionnal(float theta) {
+float signed_torque_proportionnal(float theta) {
 
 	//Compute unbounded duty cycle
-	float duty_cycle = Kp*theta;
+	float torque = Kp*theta;
+	return torque;
 
-
-	//Clip dury cycle to -100 -- 100 interval
-
-	if (duty_cycle > 0.0f) {
-		duty_cycle = MIN_DUTY_CYCLE + duty_cycle * (100.0 - MIN_DUTY_CYCLE)/100.0;
-		if (duty_cycle > 100.0f) {duty_cycle = 100.0f;}
-		return duty_cycle;
-	} else {
-		duty_cycle = - MIN_DUTY_CYCLE + duty_cycle * (100.0 - MIN_DUTY_CYCLE)/100.0;
-		if (duty_cycle < -100.0f) {duty_cycle = -100.0f;}
-		return duty_cycle;
-	}
 }
 
 void duty_cycle_proportionnal(float theta, uint8_t* duty_cycle, int8_t* direction) {
 
-	float signed_duty_cycle = signed_duty_cycle_proportionnal(theta);
+	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
+	float signed_torque = signed_torque_proportionnal(theta);
 
+	float signed_duty_cycle = signed_current_dc + signed_torque;
+
+	if (signed_duty_cycle > 100.0f)  {signed_duty_cycle = 100.0f;}
+	if (signed_duty_cycle < -100.0f) {signed_duty_cycle = -100.0f;}
 
 	if (signed_duty_cycle > 0.0) {
 		*duty_cycle = (uint8_t) signed_duty_cycle;
