@@ -27,7 +27,7 @@ class BikeController():
         print("connected")
 
         # keep state for keypresses
-        self.pressed = {"up": False, "down": False, "right": False, "left": False}
+        self.pressed = {"up": False, "down": False, "right": False, "left": False, "w": False, "a": False, "s": False,"d": False}
         # TODO get service from robot
         sv = self.bike.getServiceByUUID(SERVICE_UUID)
 
@@ -60,27 +60,55 @@ class BikeController():
                 # set state of key to pressed
                 self.pressed[event.name] = True
                 # TODO write to characteristic to change direction
-                self.power_char.write(bytes([True]))
+                self.manual_char.write(bytes([False]))
             if event.name == "left":
                 if self.pressed[event.name]: return
                 # set state of key to pressed
                 self.pressed[event.name] = True
                 # TODO write to characteristic to change direction
-                self.drive_char.write(bytes([True]))
+                self.power_char.write(bytes([True]))
             if event.name == "right":
                 if self.pressed[event.name]: return
                 # set state of key to pressed
                 self.pressed[event.name] = True
                 # TODO write to characteristic to change direction
-                self.turn_char.write(bytes([True]))
+                self.power_char.write(bytes([False]))
+
+            if event.name == "w":
+                if self.pressed[event.name]: return
+                # set state of key to pressed
+                self.pressed[event.name] = True
+                # TODO write to characteristic to change direction
+                self.drive_char.write(bytes([100]))
+
+            if event.name == "s":
+                if self.pressed[event.name]: return
+                # set state of key to pressed
+                self.pressed[event.name] = True
+                # TODO write to characteristic to change direction
+                self.drive_char.write(bytes([255-99]))
+
+            if event.name == "a":
+                if self.pressed[event.name]: return
+                # set state of key to pressed
+                self.pressed[event.name] = True
+                # TODO write to characteristic to change direction
+                self.turn_char.write(bytes([255-44]))
+
+            if event.name == "d":
+                if self.pressed[event.name]: return
+                # set state of key to pressed
+                self.pressed[event.name] = True
+                # TODO write to characteristic to change direction
+                self.turn_char.write(bytes([45]))
         else:
             # set state of key to released
             self.pressed[event.name] = False
             # TODO write to characteristic to stop moving in this direction
-            self.manual_char.write(bytes([False]))
-            self.power_char.write(bytes([False]))
-            self.drive_char.write(bytes([False]))
-            self.turn_char.write(bytes([False]))
+            # self.manual_char.write(bytes([False]))
+            # self.power_char.write(bytes([False]))
+            self.drive_char.write(bytes([0]))
+            self.turn_char.write(bytes([0]))
 
 
     def __enter__(self):

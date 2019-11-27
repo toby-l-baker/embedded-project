@@ -60,10 +60,10 @@ static simple_ble_char_t power_char = {.uuid16 = 0xeda2};
 bool power=0;
 
 static simple_ble_char_t drive_char = {.uuid16 = 0xeda3};
-uint8_t drive_speed=0;
+int8_t drive_speed=0;
 
 static simple_ble_char_t turn_char = {.uuid16 = 0xeda4};
-uint8_t turn_angle=0;
+int8_t turn_angle=0;
 
 simple_ble_app_t* simple_ble_app;
 
@@ -176,13 +176,17 @@ int main(void) {
 
   // loop forever, running state machine
   while (1) {
+    char print_string[16];
     // read sensors from robot
     // TODO: complete state machine
     switch(bike_state) {
 
       /*** BIKE OFF, ONLY BALANCING ***/
       case OFF: {
-        print_state(bike_state); //display_write("OFF", DISPLAY_LINE_0);
+        print_state(bike_state);
+        sprintf(print_string, "Spd:%d  Ang:%d", 0, 0);
+        display_write("OFF", DISPLAY_LINE_0);
+        display_write(print_string, DISPLAY_LINE_1);
         // transition logic handled by ble_evt_write
         break; // each case needs to end with break!
       }
@@ -190,6 +194,9 @@ int main(void) {
       /*** MANUAL CONTROL OF THE BIKE ***/
       case MANUAL: {
         print_state(bike_state);
+        sprintf(print_string, "Spd:%d  Ang:%d", drive_speed, turn_angle);
+        display_write("MANUAL", DISPLAY_LINE_0);
+        display_write(print_string, DISPLAY_LINE_1);
         // move with an angle and speed determined by the joystick
         break;
       }
@@ -197,6 +204,7 @@ int main(void) {
       /*** AUTOOMOUS CONTROL OF THE BIKE ***/
       case AUTONOMOUS: {
         print_state(bike_state);
+        display_write("AUTONOMOUS", DISPLAY_LINE_0);
         switch(auto_state){
           /*** GET THE PATH FOR THE BIKE TO AUTONOMOUSLY FOLLOW ***/
           case GET_PATH: {

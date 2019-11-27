@@ -66,10 +66,10 @@ static simple_ble_char_t power_char = {.uuid16 = 0xeda2};
 bool power=0;
 
 static simple_ble_char_t drive_char = {.uuid16 = 0xeda3};
-uint8_t drive_speed=0;
+int8_t drive_speed=0;
 
 static simple_ble_char_t turn_char = {.uuid16 = 0xeda4};
-uint8_t turn_angle=0;
+int8_t turn_angle=0;
 
 simple_ble_app_t* simple_ble_app;
 
@@ -102,17 +102,17 @@ void update_input(uint8_t pin, bool * old_val, bool * char_value, simple_ble_cha
   *old_val = state;
 }
 
-void update_angle(nrf_saadc_value_t x, nrf_saadc_value_t y, uint8_t * angle) {
+void update_angle(nrf_saadc_value_t x, nrf_saadc_value_t y, int8_t * angle) {
   float joy_angle = 0;
   if (y != 0 ) {
     joy_angle = (180/PI) * atan(x/y); // angle in degrees will be 0 to 360
   }
-  * (angle) = (uint8_t) ((MAX_TURN/360) * joy_angle); //map angle to be -45 to + 45
+  * (angle) = (int8_t) ((MAX_TURN/360) * joy_angle); //map angle to be -45 to + 45
 }
 
-void update_speed(nrf_saadc_value_t x, nrf_saadc_value_t y, uint8_t * speed) {
+void update_speed(nrf_saadc_value_t x, nrf_saadc_value_t y, int8_t * speed) {
   float joy_dir = (x*x + y*y) / MAX_ADC_OUT; // get normalized magnitude of joy vector
-  * (speed) = (uint8_t) (100 * joy_dir); // convert magnitue to duty cycle
+  * (speed) = (int8_t) (100 * joy_dir); // convert magnitue to duty cycle
 }
 
 int main(void) {
@@ -182,7 +182,7 @@ int main(void) {
   APP_ERROR_CHECK(error_code);
 
   // Setup LED & GPIO
-  nrf_gpio_cfg_input(BUCKLER_BUTTON0, NRF_GPIO_PIN_PULLDOWN);
+  nrf_gpio_cfg_input(BUCKLER_BUTTON0, NRF_GPIO_PIN_PULLUP);
   nrf_gpio_cfg_input(BUCKLER_SWITCH0, NRF_GPIO_PIN_PULLDOWN);
   nrf_gpio_cfg_output(BUCKLER_LED2);
   nrf_gpio_cfg_output(BUCKLER_LED1);
@@ -223,11 +223,16 @@ int main(void) {
 
   bool old_switch_state = false;
   bool old_button_state = false;
+  bool sw_state = false;
+  bool but_state = false;
 
   while(1) {
 
-    update_input(BUCKLER_SWITCH0, &old_switch_state, &manual_control, &manual_char);
-    //update_input(BUCKLER_BUTTON0, &old_button_state, &power, &power_char);
+    // update_input(BUCKLER_BUTTON0, &old_button_state, &power, &power_char);
+    // update_input(BUCKLER_SWITCH0, &old_switch_state, &manual_control, &manual_char);
+
+    sw_state =nrf_gpio_pin_read(BUCKLER_SWITCH0);
+    but_state = nrf_gpio_pin_read(BUCKLER_BUTTON0);
 
     switch(bike_state) {
       case MANUAL: {
@@ -242,6 +247,10 @@ int main(void) {
           // notify the bike of its new instructions
           simple_ble_notify_char(&drive_char);
           simple_ble_notify_char(&turn_char);
+          simple_ble_notify_char(&manual_char);
+          simple_ble_notify_char(&power_char);
+
+          printf("Button: %d, Switch: %d\n", nrf_gpio_pin_read(BUCKLER_BUTTON0),nrf_gpio_pin_read(BUCKLER_SWITCH0));
           send_data = false;
         }
         break;
