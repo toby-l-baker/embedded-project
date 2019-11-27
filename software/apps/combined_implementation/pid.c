@@ -3,10 +3,10 @@
 #include "math.h"
 
 //Proportional control
-float Kp = -0.15;
+float Kp = -0.085;
 
 //Derivative constant
-float Kd = -100;
+float Kd = 0;
 
 //Integral constant
 float Ki = 0.0;
@@ -17,7 +17,25 @@ float Kw = 0.0;
 //Minimal duty cycle to have the motor turn
 float MIN_DUTY_CYCLE = 0;
 
+#define MIN_DUTY_CYCLE 10
+#define MAX_DUTY_CYCLE 100
 
+float map_duty_cycle(float dc){
+	if (dc >= 0.0)
+		return MIN_DUTY_CYCLE + dc*(MAX_DUTY_CYCLE - MIN_DUTY_CYCLE)/100;
+	else
+		return -MIN_DUTY_CYCLE + dc*(MAX_DUTY_CYCLE - MIN_DUTY_CYCLE)/100;
+
+}
+
+/* //Hardcoded
+float map_duty_cycle(float dc){
+  if (dc >= 0.0)
+    return 15.0 + dc*0.850;
+  else
+    return -15.0 + dc*0.850;
+
+}*/
 
 
 //Computation intermediaries

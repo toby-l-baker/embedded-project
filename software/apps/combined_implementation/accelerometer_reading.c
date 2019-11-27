@@ -52,7 +52,7 @@
 
 */
 
-//Buckler 40
+//Buckler 32 
 #define X_SENSITIVITY 0.3908
 #define X_BIAS 1.4009
 
@@ -153,9 +153,16 @@ void read_and_filter_voltage(struct adc_channel * ch, struct slist * list) {
 
 /* Converts gravity to an angle */
 void update_angles(struct adc_channel * x, struct adc_channel * y, struct adc_channel * z) {
-  x->g = (x->filtered_voltage - x->bias) / x->sensitivity;
-  y->g = (y->filtered_voltage - y->bias) / y->sensitivity;
-  z->g = (z->filtered_voltage - z->bias) / z->sensitivity;
+  /* Filtering */
+  // x->g = (x->filtered_voltage - x->bias) / x->sensitivity;
+  // y->g = (y->filtered_voltage - y->bias) / y->sensitivity;
+  // z->g = (z->filtered_voltage - z->bias) / z->sensitivity;
+  
+
+  //Not filtering
+  x->g = (x->voltage - x->bias) / x->sensitivity;
+  y->g = (y->voltage - y->bias) / y->sensitivity;
+  z->g = (z->voltage - z->bias) / z->sensitivity;
 
   x->theta = atan(x->g / sqrt(y->g*y->g + z->g*z->g))/PI*180;
   y->theta = atan(y->g / sqrt(x->g*x->g + z->g*z->g))/PI*180;
@@ -275,9 +282,17 @@ float read_clock_time() {
 }
 
 void update_angles_struct(angles_t* angles) {
-  read_and_filter_voltage(x_ch, x_list);
-  read_and_filter_voltage(y_ch, y_list);
-  read_and_filter_voltage(z_ch, z_list);
+  // USing filetering
+  // read_and_filter_voltage(x_ch, x_list);
+  // read_and_filter_voltage(y_ch, y_list);
+  // read_and_filter_voltage(z_ch, z_list);
+
+
+  // Not using filtering
+  read_adc_voltage(x_ch);
+  read_adc_voltage(y_ch);
+  read_adc_voltage(z_ch);
+
 
   update_angles(x_ch, y_ch, z_ch);
   

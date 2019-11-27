@@ -37,5 +37,6 @@ void reset_integral(int time_stamp);
 //Resets the derivative used in the PID. Takes current time & current angle
 void reset_derivative(float theta, int time_stamp);
 
+float map_duty_cycle(float);
 
 #endif

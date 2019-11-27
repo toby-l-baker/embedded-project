@@ -27,7 +27,7 @@
 #include "pid.h"
 
 #define MIN_ANGLE 0.0
-#define EQ_ANGLE 2
+#define EQ_ANGLE 0
 
 /* CODE RESOURCES */
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Flib_pwm.html
@@ -123,16 +123,18 @@ int main (void) {
       // }
     	update_angles_struct(angles);
         if (abs(angles->theta_y - EQ_ANGLE) > MIN_ANGLE) {
-    	   duty_cycle_PID(angles->theta_y - EQ_ANGLE, angles->time_stamp, &duty_cycle, &direction);
+        	//duty_cycle_PID(angles->theta_y - EQ_ANGLE, angles->time_stamp, &duty_cycle, &direction);
+    	    duty_cycle_proportionnal(angles->theta_y - EQ_ANGLE, &duty_cycle, &direction);
         }
-
+        
         printf("Angle %f\n", angles->theta_y - EQ_ANGLE);
         printf("Direction %d\n", direction);
         printf("Duty cycle %d\n", duty_cycle);
     	set_motor_direction(flywheel, direction);
-    	set_motor_pwm(flywheel, duty_cycle);
-    	
-    	nrf_delay_ms(50);
+    	set_motor_pwm(flywheel, map_duty_cycle(duty_cycle));
+    	//set_motor_pwm(flywheel, duty_cycle);
+
+    	nrf_delay_ms(1);
 
       
     }
