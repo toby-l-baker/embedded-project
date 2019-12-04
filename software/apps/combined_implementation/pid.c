@@ -3,24 +3,22 @@
 #include "math.h"
 
 //Proportional control
-float Kp = -0.2;
+float Kp = -.3;
 
 //Derivative constant
-float Kd = -0.0;
+float Kd = -0;
 
 //Integral constant
-float Ki = 0.0;
+float Ki = 0;
 
 //Antiwindup constant (use it?)
-float Kw = 0.0;
+float Kw = 2.0;
 
-//Minimal duty cycle to have the motor turn
-float MIN_DUTY_CYCLE = 0;
-
-#define MIN_DUTY_CYCLE 0
+#define MIN_DUTY_CYCLE 10
 #define MAX_DUTY_CYCLE 100
 
 float map_duty_cycle(float dc){
+	return dc+MIN_DUTY_CYCLE*atan(2*dc);
 	if (dc >= 0.0)
 		return MIN_DUTY_CYCLE + dc*(MAX_DUTY_CYCLE - MIN_DUTY_CYCLE)/100;
 	else
@@ -43,7 +41,7 @@ float integral = 0.0f;
 float derivative = 0.0f;
 
 float last_theta = -1.0f;
-int last_timestamp = -1.0f;
+float last_timestamp = -1.0f;
 
 
 void reset_integral(int time_stamp) {
@@ -59,7 +57,7 @@ void reset_derivative(float theta, int time_stamp) {
 
 float update_integral(float new_theta, int time_stamp) {
 	float delta_t = time_stamp - last_timestamp;
-	integral += new_theta * delta_t;
+	integral = integral/Kw +  new_theta * delta_t;
 	return integral;
 }
 
@@ -94,8 +92,8 @@ float signed_torque_PID(float theta, float time_stamp) {
 	last_theta = theta;
 	last_timestamp = time_stamp;
 
-	return signed_torque;
 
+	return signed_torque;
 }
 
 
@@ -120,6 +118,7 @@ void duty_cycle_PID(float theta, float time_stamp, float* duty_cycle, int8_t* di
 
 
 }
+
 
 float signed_torque_proportionnal(float theta) {
 
@@ -149,4 +148,52 @@ void duty_cycle_proportionnal(float theta, float* duty_cycle, int8_t* direction)
 		return;
 	}
 
+}
+
+
+
+
+
+//////////////////////////////// THESE CONTROL PWM DIRECTLY ////////////////
+
+
+float signed_PWM_PID(float theta, float time_stamp) {
+
+	//Check that integral, derivative are initialized
+	if (last_timestamp < 0.0) {
+		printf("Integral and derivates not set\n");
+		reset_derivative(theta, time_stamp);
+		reset_integral(time_stamp);
+	}
+
+	//Compute unbounded duty cycle
+	float signed_duty_cycle = Kp*theta;
+	signed_duty_cycle += Kd*compute_derivative(theta, time_stamp);
+	signed_duty_cycle += Ki*update_integral(theta, time_stamp);
+
+
+	//Update last values
+	last_theta = theta;
+	last_timestamp = time_stamp;
+
+	return signed_duty_cycle;
+
+}
+
+void duty_cycle_PWM_PID(float theta, float time_stamp, float* duty_cycle, int8_t* direction) {
+
+	float signed_duty_cycle = signed_PWM_PID(theta, time_stamp);
+
+	if (signed_duty_cycle > 100.0f)  {signed_duty_cycle = 100.0f;}
+	if (signed_duty_cycle < -100.0f) {signed_duty_cycle = -100.0f;}
+
+	if (signed_duty_cycle > 0.0) {
+		*duty_cycle = signed_duty_cycle;
+		*direction = FORWARD;
+		return;
+	} else {
+		*duty_cycle = (-signed_duty_cycle);
+		*direction = BACKWARD;
+		return;
+	}
 }

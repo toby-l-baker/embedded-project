@@ -39,4 +39,6 @@ void reset_derivative(float theta, int time_stamp);
 
 float map_duty_cycle(float);
 
+void duty_cycle_PWM_PID(float theta, float time_stamp, float* duty_cycle, int8_t* direction);
+
 #endif
