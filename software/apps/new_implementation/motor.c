@@ -56,12 +56,14 @@ void set_dc_motor_direction(struct dc_motor * motor, int8_t direction){
     }
 }
 
-void set_dc_motor_pwm(struct dc_motor * motor, uint8_t duty_cycle){
+ret_code_t set_dc_motor_pwm(struct dc_motor * motor, uint8_t duty_cycle){
     motor->duty_cycle = duty_cycle;
-    while (app_pwm_channel_duty_set(motor->pwm_inst, motor->pwm_channel, motor->duty_cycle) == NRF_ERROR_BUSY);
+    return app_pwm_channel_duty_set(motor->pwm_inst, motor->pwm_channel, motor->duty_cycle);
+    // while (app_pwm_channel_duty_set(motor->pwm_inst, motor->pwm_channel, motor->duty_cycle) == NRF_ERROR_BUSY);
 }
 
-void set_servo_motor_pwm(struct servo_motor * motor, uint8_t duty_cycle){
+ret_code_t set_servo_motor_pwm(struct servo_motor * motor, uint8_t duty_cycle){
     motor->duty_cycle = duty_cycle;
-    while (app_pwm_channel_duty_set(motor->pwm_inst, SERVO_MOTOR_CHANNEL, motor->duty_cycle) == NRF_ERROR_BUSY);
+    return app_pwm_channel_duty_set(motor->pwm_inst, SERVO_MOTOR_CHANNEL, motor->duty_cycle);
+    // while (app_pwm_channel_duty_set(motor->pwm_inst, SERVO_MOTOR_CHANNEL, motor->duty_cycle) == NRF_ERROR_BUSY);
 }

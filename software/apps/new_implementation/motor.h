@@ -27,8 +27,8 @@ struct servo_motor * create_servo_motor(uint8_t ctrl);
 struct dc_motor * create_dc_motor(uint8_t enable, uint8_t in1, uint8_t in2, uint8_t pwm_channel);
 
 void set_dc_motor_direction(struct dc_motor * motor, int8_t direction);
-void set_dc_motor_pwm(struct dc_motor * motor, uint8_t duty_cycle);
-void set_servo_motor_pwm(struct servo_motor * motor, uint8_t duty_cycle);
+ret_code_t set_dc_motor_pwm(struct dc_motor * motor, uint8_t duty_cycle);
+ret_code_t set_servo_motor_pwm(struct servo_motor * motor, uint8_t duty_cycle);
 
 
 #endif

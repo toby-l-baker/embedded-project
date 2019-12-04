@@ -1,6 +1,12 @@
 #ifndef SETUP_H
 #define SETUP_H
 
+//Comment out to not filter data
+
+
+
+
+
 #include "app_error.h"
 #include "nrf.h"
 #include "nrf_delay.h"
@@ -17,9 +23,9 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
 #include "motor.h"
 
-extern ret_code_t error_code;
 
 void initialize_buckler();
 void initialize_dc_motor_pwm(struct dc_motor* motor_1, struct dc_motor* motor_2);
