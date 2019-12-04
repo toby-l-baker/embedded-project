@@ -3,10 +3,10 @@
 #include "math.h"
 
 //Proportional control
-float Kp = -0.085;
+float Kp = -0.2;
 
 //Derivative constant
-float Kd = 0;
+float Kd = -0.0;
 
 //Integral constant
 float Ki = 0.0;
@@ -17,7 +17,7 @@ float Kw = 0.0;
 //Minimal duty cycle to have the motor turn
 float MIN_DUTY_CYCLE = 0;
 
-#define MIN_DUTY_CYCLE 10
+#define MIN_DUTY_CYCLE 0
 #define MAX_DUTY_CYCLE 100
 
 float map_duty_cycle(float dc){
@@ -99,18 +99,21 @@ float signed_torque_PID(float theta, float time_stamp) {
 }
 
 
-void duty_cycle_PID(float theta, float time_stamp, uint8_t* duty_cycle, int8_t* direction) {
+void duty_cycle_PID(float theta, float time_stamp, float* duty_cycle, int8_t* direction) {
 	
 	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
 	float signed_torque = signed_torque_PID(theta, time_stamp);
 	float signed_duty_cycle = signed_current_dc + signed_torque;
 
+	if (signed_duty_cycle > 100.0f)  {signed_duty_cycle = 100.0f;}
+	if (signed_duty_cycle < -100.0f) {signed_duty_cycle = -100.0f;}
+
 	if (signed_duty_cycle > 0.0) {
-		*duty_cycle = (uint8_t) signed_duty_cycle;
+		*duty_cycle = signed_duty_cycle;
 		*direction = FORWARD;
 		return;
 	} else {
-		*duty_cycle = (uint8_t) (-signed_duty_cycle);
+		*duty_cycle = (-signed_duty_cycle);
 		*direction = BACKWARD;
 		return;
 	}
@@ -126,7 +129,7 @@ float signed_torque_proportionnal(float theta) {
 
 }
 
-void duty_cycle_proportionnal(float theta, uint8_t* duty_cycle, int8_t* direction) {
+void duty_cycle_proportionnal(float theta, float* duty_cycle, int8_t* direction) {
 
 	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
 	float signed_torque = signed_torque_proportionnal(theta);
@@ -137,11 +140,11 @@ void duty_cycle_proportionnal(float theta, uint8_t* duty_cycle, int8_t* directio
 	if (signed_duty_cycle < -100.0f) {signed_duty_cycle = -100.0f;}
 
 	if (signed_duty_cycle > 0.0) {
-		*duty_cycle = (uint8_t) signed_duty_cycle;
+		*duty_cycle = signed_duty_cycle;
 		*direction = FORWARD;
 		return;
 	} else {
-		*duty_cycle = (uint8_t) (-signed_duty_cycle);
+		*duty_cycle = (-signed_duty_cycle);
 		*direction = BACKWARD;
 		return;
 	}
