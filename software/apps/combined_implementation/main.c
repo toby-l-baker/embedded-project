@@ -23,8 +23,9 @@
 #include "buckler.h"
 
 #include "motors.h"
-#include "accelerometer_reading.h"
+// #include "accelerometer_reading.h"
 #include "pid.h"
+#include "mpu9250_interface.h"
 
 #define MIN_ANGLE 0.0
 #define EQ_ANGLE 4.5
@@ -35,8 +36,11 @@
 // https://github.com/xueliu/nRF52/blob/master/nRF52_SDK_0.9.1_3639cc9/components/libraries/pwm/app_pwm.h
 
 
+
 int main (void) {
     ret_code_t error_code = NRF_SUCCESS;
+
+
 
     // initialize RTT library
     error_code = NRF_LOG_INIT(NULL);
@@ -64,7 +68,7 @@ int main (void) {
     // nrf_gpio_pin_clear(drive->in2);
     /* Initialize 2 CH PWM, 200 Hz */
     app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_2CH(5000L, flywheel->enable, drive->enable);
-    /* Switch the polarity of the second channel. */
+     // Switch the polarity of the second channel. 
     pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
     pwm1_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
 
@@ -103,7 +107,10 @@ int main (void) {
 	// nrf_delay_ms(2000);
     printf("Setting up sensors...\n");
     angles_t* angles = malloc(sizeof(angles_t));
-    init_accelerometers(); 
+    //init_accelerometers(); 
+    init_mpu9250();
+    init_mpu9250_timer(1.953125); 
+
     set_motor_direction(flywheel, FORWARD);
 
 
@@ -123,8 +130,10 @@ int main (void) {
       //     // while (app_pwm_channel_duty_set(&PWM0, 1, drive->duty_cycle) == NRF_ERROR_BUSY);
       //     nrf_delay_ms(100);
       // }
-    	update_angles_struct(angles);
-        
+    	//update_angles_struct(angles);
+        update_angles(angles);
+
+
         if (abs(angles->theta_y - EQ_ANGLE) > MIN_ANGLE) {
         	duty_cycle_PID(angles->theta_y - EQ_ANGLE, angles->time_stamp, &duty_cycle, &direction);
     	   
