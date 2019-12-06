@@ -29,8 +29,8 @@
 #define PWM_CHANNEL_0 		0
 #define PWM_CHANNEL_1		1
 
-#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,17) // 19 (what we were using before MPU, conflicting pins for the I2C)
-#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,18) // 20
+#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,17)
+#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,18)
 #define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,23)
 
 #define DRIVE_PIN_ENABLE NRF_GPIO_PIN_MAP(0,0)
@@ -54,7 +54,6 @@ struct motor
   app_pwm_t* pwm_inst;
 };
 
-struct motor * create_motor(uint8_t enable, uint8_t in1, uint8_t in2, uint8_t pwm_channel, app_pwm_t const * const pwm_inst);
 void set_motor_direction(struct motor * motor, int8_t direction);
 void set_motor_pwm(struct motor * motor, uint8_t duty_cycle);
 void pwm_ready_callback(uint32_t pwm_id);

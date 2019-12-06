@@ -21,12 +21,12 @@
 #include "buckler.h"
 #include "display.h"
 #include "mpu9250.h"
-#include "mpu9250_interface.h"
+
 #include "math.h"
-// #include "MadgwickAHRS.h"
 #include "MadgwickAHRS.h"
 
-
+#define CLOCK_SPEED 16000000.0
+#define PRESCALER_VALUE 512.0
 
 //Contains accelerometer readings in DEGREES
 typedef struct angles_t {
@@ -50,6 +50,6 @@ typedef struct EulerAngles {
 void init_mpu9250_timer(float ms);
 void init_mpu9250();
 void update_angles(angles_t* angles);
-
+void init_clock_time();
 
 #endif

@@ -51,8 +51,7 @@ void set_motor_direction(struct motor * motor, int8_t direction){
 
 void set_motor_pwm(struct motor * motor, uint8_t duty_cycle){
     motor->duty_cycle = duty_cycle;
-    //while (app_pwm_channel_duty_set(motor->pwm_inst, motor->pwm_channel, motor->duty_cycle) == NRF_ERROR_BUSY);
-    app_pwm_channel_duty_set(motor->pwm_inst, motor->pwm_channel, motor->duty_cycle);
+    while (app_pwm_channel_duty_set(motor->pwm_inst, motor->pwm_channel, motor->duty_cycle) == NRF_ERROR_BUSY);
 }
 
 void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function

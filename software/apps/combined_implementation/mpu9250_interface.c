@@ -78,6 +78,25 @@ void init_mpu9250_timer(float ms) {
   printf("Timer Started!\n");
 }
 
+void init_clock_time() {
+  NRF_TIMER4->MODE          = 0;    //Timer not counter
+  NRF_TIMER4->BITMODE       = 3; //32 bits
+  NRF_TIMER4->PRESCALER     = 9; //31 250 Hz
+  NRF_TIMER4->TASKS_CLEAR   = 1; //Reset value to 0
+  NRF_TIMER4->TASKS_START   = 1;
+  printf("Clock time initialized\n");
+  return;
+}
+
+float read_clock_time() {
+  NRF_TIMER4->TASKS_CAPTURE[1] = 1;
+  uint32_t time_stamp_int = NRF_TIMER4->CC[1];
+  float time_stamp = ((float) time_stamp_int) / (CLOCK_SPEED / PRESCALER_VALUE);
+  return time_stamp;
+
+}
+
+
 void update_angles(angles_t * angles) {
   if (sample_imu) {
     gyro = mpu9250_read_gyro();
@@ -92,6 +111,7 @@ void update_angles(angles_t * angles) {
     angles->theta_x = euler.roll;
     angles->theta_y = euler.pitch;
     angles->theta_z = euler.yaw;
+    angles->time_stamp = read_clock_time();
     sample_imu = false;
   }
 }
