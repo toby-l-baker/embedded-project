@@ -2,20 +2,50 @@
 #include <stdio.h>
 #include "math.h"
 
+
+/*************** PID torque values **************/
+
 //Proportional control
-float Kp = -.3;
+#define Kp_torque 		-.3
 
 //Derivative constant
-float Kd = -0;
+#define Kd_torque 		-0
 
 //Integral constant
-float Ki = 0;
+#define Ki_torque 		0
 
-//Antiwindup constant (use it?)
-float Kw = 2.0;
+/*************** PID PWM values **************/
+
+//Proportional control
+#define Kp_PWM 			-30.0
+
+//Derivative constant
+#define Kd_PWM 			-0.0
+
+//Integral constant
+#define Ki_PWM 			0.0
+
+/************** Proportionnal torque value **************/
+
+#define Kp_torque_prop 	-0.2
+
+/************** This anti-windup constant prevents the integral 
+from becoming to big and improves system stability ************/
+
+#define Kw 				0.95 //It should be less that 1
+
+
+
+
 
 #define MIN_DUTY_CYCLE 10
 #define MAX_DUTY_CYCLE 100
+
+/* This function maps a duty cycle to a motor-usable duty cycle */
+/* IT STILL NEEDS WORK, BUT I THINK WE CAN WORK WITHOUT IT
+It tries to eliminate inconsistencies in rotationnal speed and map the
+function duty-cycle -> Speed to a linear function
+*/
 
 float map_duty_cycle(float dc){
 	return dc+MIN_DUTY_CYCLE*atan(2*dc);
@@ -26,17 +56,8 @@ float map_duty_cycle(float dc){
 
 }
 
-/* //Hardcoded
-float map_duty_cycle(float dc){
-  if (dc >= 0.0)
-    return 15.0 + dc*0.850;
-  else
-    return -15.0 + dc*0.850;
 
-}*/
-
-
-//Computation intermediaries
+//Computation intermediaries for the PIDs
 float integral = 0.0f;
 float derivative = 0.0f;
 
@@ -57,7 +78,7 @@ void reset_derivative(float theta, int time_stamp) {
 
 float update_integral(float new_theta, int time_stamp) {
 	float delta_t = time_stamp - last_timestamp;
-	integral = integral/Kw +  new_theta * delta_t;
+	integral = integral*Kw +  new_theta * delta_t;
 	return integral;
 }
 
@@ -73,6 +94,15 @@ float compute_derivative(float theta, int time_stamp) {
 	return derivative;
 }
 
+
+/********************* These functions control torque ************************/
+/*
+This means that the PID outputs control the torque as a function of the inputs
+It then transforms that torque into a new PWM by integrating the torque
+Basically : new_dc = old_dc + torque * dt
+*/
+
+
 float signed_torque_PID(float theta, float time_stamp) {
 
 	//Check that integral, derivative are initialized
@@ -82,11 +112,10 @@ float signed_torque_PID(float theta, float time_stamp) {
 		reset_integral(time_stamp);
 	}
 
-	//Compute unbounded duty cycle
-	float signed_torque = Kp*theta;
-	signed_torque += Kd*compute_derivative(theta, time_stamp);
-	signed_torque += Ki*update_integral(theta, time_stamp);
-
+	//Compute duty cycle update
+	float signed_torque = Kp_torque*theta;
+	signed_torque += Kd_torque*compute_derivative(theta, time_stamp);
+	signed_torque += Ki_torque*update_integral(theta, time_stamp);
 
 	//Update last values
 	last_theta = theta;
@@ -96,16 +125,18 @@ float signed_torque_PID(float theta, float time_stamp) {
 	return signed_torque;
 }
 
-
-void duty_cycle_PID(float theta, float time_stamp, float* duty_cycle, int8_t* direction) {
+void duty_cycle_torque_PID(float theta, float time_stamp, float* duty_cycle, int8_t* direction) {
 	
+	//Udpate unbounded duty cycle
 	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
 	float signed_torque = signed_torque_PID(theta, time_stamp);
 	float signed_duty_cycle = signed_current_dc + signed_torque;
 
+	//CLip to to -100 / 100
 	if (signed_duty_cycle > 100.0f)  {signed_duty_cycle = 100.0f;}
 	if (signed_duty_cycle < -100.0f) {signed_duty_cycle = -100.0f;}
 
+	//Return motor-usable parameters
 	if (signed_duty_cycle > 0.0) {
 		*duty_cycle = signed_duty_cycle;
 		*direction = FORWARD;
@@ -120,24 +151,32 @@ void duty_cycle_PID(float theta, float time_stamp, float* duty_cycle, int8_t* di
 }
 
 
-float signed_torque_proportionnal(float theta) {
+/********************* These functions control torque ************************/
+/*
+This is a simple torque controller similar to the previous PID, except it is
+simply proportional
+Formula used to convert torque to dc is still : new_dc = old_dc + torque * dt
+*/
 
-	//Compute unbounded duty cycle
-	float torque = Kp*theta;
+float signed_torque_proportional(float theta) {
+
+	float torque = Kp_torque_prop*theta;
 	return torque;
 
 }
 
-void duty_cycle_proportionnal(float theta, float* duty_cycle, int8_t* direction) {
+void duty_cycle_torque_proportional(float theta, float* duty_cycle, int8_t* direction) {
 
+	//Udpate unbounded duty cycle
 	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
-	float signed_torque = signed_torque_proportionnal(theta);
-
+	float signed_torque = signed_torque_proportional(theta);
 	float signed_duty_cycle = signed_current_dc + signed_torque;
 
+	//CLip to to -100 / 100
 	if (signed_duty_cycle > 100.0f)  {signed_duty_cycle = 100.0f;}
 	if (signed_duty_cycle < -100.0f) {signed_duty_cycle = -100.0f;}
 
+	//Return motor-usable parameters
 	if (signed_duty_cycle > 0.0) {
 		*duty_cycle = signed_duty_cycle;
 		*direction = FORWARD;
@@ -151,11 +190,13 @@ void duty_cycle_proportionnal(float theta, float* duty_cycle, int8_t* direction)
 }
 
 
-
-
-
-//////////////////////////////// THESE CONTROL PWM DIRECTLY ////////////////
-
+/********************* These functions control PWM ************************/
+/*
+This means that the PID outputs control the PWM as a function of the inputs
+It then returns that PWM directly. It has the advantag of being very simple
+to use, but will probably be very hard to tune, because the proportionnal
+control alone cannot work
+*/
 
 float signed_PWM_PID(float theta, float time_stamp) {
 
@@ -166,11 +207,10 @@ float signed_PWM_PID(float theta, float time_stamp) {
 		reset_integral(time_stamp);
 	}
 
-	//Compute unbounded duty cycle
-	float signed_duty_cycle = Kp*theta;
-	signed_duty_cycle += Kd*compute_derivative(theta, time_stamp);
-	signed_duty_cycle += Ki*update_integral(theta, time_stamp);
-
+	//Compute duty cycle update
+	float signed_duty_cycle = Kp_PWM*theta;
+	signed_duty_cycle += Kd_PWM*compute_derivative(theta, time_stamp);
+	signed_duty_cycle += Ki_PWM*update_integral(theta, time_stamp);
 
 	//Update last values
 	last_theta = theta;
@@ -182,11 +222,14 @@ float signed_PWM_PID(float theta, float time_stamp) {
 
 void duty_cycle_PWM_PID(float theta, float time_stamp, float* duty_cycle, int8_t* direction) {
 
+	//Udpate unbounded duty cycle
 	float signed_duty_cycle = signed_PWM_PID(theta, time_stamp);
 
+	//CLip to to -100 / 100
 	if (signed_duty_cycle > 100.0f)  {signed_duty_cycle = 100.0f;}
 	if (signed_duty_cycle < -100.0f) {signed_duty_cycle = -100.0f;}
 
+	//Return motor-usable parameters
 	if (signed_duty_cycle > 0.0) {
 		*duty_cycle = signed_duty_cycle;
 		*direction = FORWARD;
