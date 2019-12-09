@@ -26,7 +26,7 @@
 #include "pid.h"
 
 //Equilibrium perturbation
-#define EQ_ANGLE 5.85
+#define EQ_ANGLE 3.35
 
 //Minimum angle, below which no control is applied, should be removed
 #define MIN_ANGLE 0
@@ -106,7 +106,7 @@ int main (void) {
         update_angles(angles);
 
         if (abs(angles->theta_y - EQ_ANGLE) > MIN_ANGLE) {
-            duty_cycle_PWM_PID(angles->theta_x - EQ_ANGLE, angles->time_stamp, &duty_cycle, &direction);
+            duty_cycle_torque_PID(angles->theta_x - EQ_ANGLE, angles->time_stamp, &duty_cycle, &direction);
         }
         
         #if DEBUG

@@ -6,24 +6,29 @@
 /*************** PID torque values **************/
 
 //Proportional control
-#define Kp_torque 		-.3
+#define Kp_torque 		-0.3
 
 //Derivative constant
 #define Kd_torque 		-0
 
 //Integral constant
-#define Ki_torque 		0
+#define Ki_torque 		8.5
+
+//
+#define Kpwm_torque		-0.3
 
 /*************** PID PWM values **************/
 
 //Proportional control
-#define Kp_PWM 			-30.0
+#define Kp_PWM 			-24.58
 
 //Derivative constant
-#define Kd_PWM 			-0.0
+#define Kd_PWM 			-1.0
 
 //Integral constant
-#define Ki_PWM 			0.0
+#define Ki_PWM 			100 //397.0
+
+#define Kpwm_PWM		-10.1
 
 /************** Proportionnal torque value **************/
 
@@ -38,7 +43,7 @@ from becoming to big and improves system stability ************/
 
 
 
-#define MIN_DUTY_CYCLE 10
+#define MIN_DUTY_CYCLE 0
 #define MAX_DUTY_CYCLE 100
 
 /* This function maps a duty cycle to a motor-usable duty cycle */
@@ -131,6 +136,7 @@ void duty_cycle_torque_PID(float theta, float time_stamp, float* duty_cycle, int
 	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
 	float signed_torque = signed_torque_PID(theta, time_stamp);
 	float signed_duty_cycle = signed_current_dc + signed_torque;
+	signed_duty_cycle += signed_current_dc * Kpwm_torque;
 
 	//CLip to to -100 / 100
 	if (signed_duty_cycle > 100.0f)  {signed_duty_cycle = 100.0f;}
@@ -223,7 +229,9 @@ float signed_PWM_PID(float theta, float time_stamp) {
 void duty_cycle_PWM_PID(float theta, float time_stamp, float* duty_cycle, int8_t* direction) {
 
 	//Udpate unbounded duty cycle
+	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
 	float signed_duty_cycle = signed_PWM_PID(theta, time_stamp);
+	signed_duty_cycle += signed_current_dc * Kpwm_PWM;
 
 	//CLip to to -100 / 100
 	if (signed_duty_cycle > 100.0f)  {signed_duty_cycle = 100.0f;}
