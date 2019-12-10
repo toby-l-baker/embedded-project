@@ -24,7 +24,7 @@
 #include "servo_driver.h"
 
 
-#define PIN_NB 25
+#define PIN_NB 27
 
 /* CODE RESOURCES */
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Flib_pwm.html
@@ -57,8 +57,8 @@ int main (void) {
     /* Initialize 1 CH PWM, 50 Hz */
     app_pwm_config_t pwm_cfg = APP_PWM_DEFAULT_CONFIG_1CH(20000L, front->pin_nb);
 
-    /* Switch the polarity of the second channel. */
-    //pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
+    /* Switch the polarity of the first channel. */
+    pwm_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
 
     error_code = app_pwm_init(&PWM2, &pwm_cfg, pwm_ready_callback);
     APP_ERROR_CHECK(error_code);
@@ -70,16 +70,14 @@ int main (void) {
 
     // loop forever
     while(1) {
-          for(int i=4; i < 11; i++) {
-            set_servo_pwm(front, i);
-            printf("%d\n", i);
-          // while (app_pwm_channel_duty_set(&PWM0, 0, flywheel->duty_cycle) == NRF_ERROR_BUSY);
-          // while (app_pwm_channel_duty_set(&PWM0, 1, drive->duty_cycle) == NRF_ERROR_BUSY);
-            nrf_delay_ms(100);
-          }
+      for(int i=4; i < 11; i++) {
+        set_servo_pwm(front, i);
+        printf("%d\n", i);
+        nrf_delay_ms(500);
       }
-
-      nrf_delay_ms(100);
-
-      
+        // set_servo_pwm(front,3);
+        
     }
+
+    nrf_delay_ms(100);
+}
