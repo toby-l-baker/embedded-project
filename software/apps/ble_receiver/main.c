@@ -65,6 +65,9 @@ int8_t drive_speed=0;
 static simple_ble_char_t turn_char = {.uuid16 = 0xeda4};
 int8_t turn_angle=0;
 
+static simple_ble_char_t path_char = {.uuid16 = 0xeda5};
+float[2] path_plan;
+
 simple_ble_app_t* simple_ble_app;
 
 bike_states bike_state;
@@ -174,6 +177,9 @@ int main(void) {
       sizeof(turn_angle), (uint8_t*)&turn_angle,
       &bike_srv, &turn_char);
 
+  simple_ble_add_characteristic(1, 1, 0, 0,
+      sizeof(path_plan), (float*)&path_plan,
+      &bike_srv, &turn__char);
   // loop forever, running state machine
   while (1) {
     char print_string[16];
@@ -184,7 +190,7 @@ int main(void) {
       /*** BIKE OFF, ONLY BALANCING ***/
       case OFF: {
         print_state(bike_state);
-        sprintf(print_string, "Spd:%d  Ang:%d", 0, 0);
+        sprintf(print_string, "                ");
         display_write("OFF", DISPLAY_LINE_0);
         display_write(print_string, DISPLAY_LINE_1);
         // transition logic handled by ble_evt_write
@@ -210,12 +216,18 @@ int main(void) {
           case GET_PATH: {
             //Integrate the joystick to get a vector
             printf("Getting path\n");
+            if ((path_plan[0] != 0) && (path_plan[1] != 0) {
+              auto_state = DRIVE;
+              sprintf(print_string, "r:%d  theta:%d", path_plan[0], path_plan[1]);
+              display_write(print_string, DISPLAY_LINE_1);
+            }
             break;
           }
           /*** FOLLOW THE SET PATH ***/
           case DRIVE: {
             //Get to our goal!!
             printf("Navigating to path\n");
+            //Keep navigating to our goal pos
             break;
           }
         }

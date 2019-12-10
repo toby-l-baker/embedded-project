@@ -17,7 +17,8 @@ SERVICE_UUID = "4607eda0-f65e-4d59-a9ff-84420d87a4ca"
 CHAR_UUIDS = ["4607eda1-f65e-4d59-a9ff-84420d87a4ca",
             "4607eda2-f65e-4d59-a9ff-84420d87a4ca",
             "4607eda3-f65e-4d59-a9ff-84420d87a4ca",
-            "4607eda4-f65e-4d59-a9ff-84420d87a4ca"]# TODO: add your characteristics
+            "4607eda4-f65e-4d59-a9ff-84420d87a4ca",
+            "4607eda5-f65e-4d59-a9ff-84420d87a4ca"]
 
 class States(Enum):
     IDLE=0
@@ -34,6 +35,7 @@ class BikeController():
         # self.power_char = sv.getCharacteristics(CHAR_UUIDS[1])[0]
         # self.drive_char = sv.getCharacteristics(CHAR_UUIDS[2])[0]
         # self.turn_char = sv.getCharacteristics(CHAR_UUIDS[3])[0]
+        # self.path_char = sv.getCharacteristics(CHAR_UUIDS[4])[0]
 
         print("connected")
         # Setup the gamepad and print its information
