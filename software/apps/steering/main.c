@@ -26,6 +26,9 @@
 
 #define PIN_NB 27
 
+/* Initialize PWM2 on TIMER 1 */ 
+APP_PWM_INSTANCE(PWM2,1);
+
 /* CODE RESOURCES */
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Flib_pwm.html
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v12.0.0%2Fgroup__app__pwm.html&anchor=ga0ab3501072119588eb8bea06efe10350
@@ -41,7 +44,7 @@ int main (void) {
 
     // initialization complete
     printf("Buckler initialized!\n");
-
+    // printf("%d\n", (uint8_t) ((-50.0+90.0)*9.0/180.0 + 1.0));
     /* Create Motor Structs */
     
 	// nrf_gpio_pin_set(drive->enable);
@@ -49,8 +52,8 @@ int main (void) {
 	// while(1){
 	// 	nrf_delay_ms(25);
 	// }
-    /* Initialize PWM0 on TIMER 1 */
-    APP_PWM_INSTANCE(PWM2,1);
+  
+ 
 
     struct servo * front = create_servo(PIN_NB, PWM_CHANNEL_0, &PWM2);
 
@@ -66,17 +69,19 @@ int main (void) {
 
     /* Set both duty cycles to zero initially, wait until channels are ready */
     //while (app_pwm_channel_duty_set(&PWM0, 0, flywheel->duty_cycle) == NRF_ERROR_BUSY);
+    printf("Enter main loop");
 
-
+    uint8_t duty_cycle;
     // loop forever
     while(1) {
-      for(int i=4; i < 11; i++) {
-        set_servo_pwm(front, i);
-        printf("%d\n", i);
-        nrf_delay_ms(500);
-      }
-        // set_servo_pwm(front,3);
-        
+      // for(int i=1; i < 11; i++) {
+      //   set_servo_pwm(front, i);
+      //   printf("%d\n", i);
+      //   nrf_delay_ms(500);
+      // }
+        //set_servo_pwm(front,5.5);
+        set_servo_angle(front,-50.0);
+
     }
 
     nrf_delay_ms(100);

@@ -37,7 +37,7 @@ struct servo
 
 struct servo * create_servo(uint8_t pin_nb, uint8_t pwm_channel, app_pwm_t const * const pwm_inst);
 
-void set_servo_angle(struct servo * servo, int8_t angle);
+void set_servo_angle(struct servo * servo, float angle);
 
 void set_servo_pwm(struct servo * servo, uint8_t duty_cycle);
 

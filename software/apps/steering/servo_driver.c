@@ -15,8 +15,9 @@ struct servo * create_servo(uint8_t pin_nb, uint8_t pwm_channel, app_pwm_t const
     
 }
 
-void set_servo_angle(struct servo * servo, int8_t angle) {
-    uint8_t duty_cycle = (angle+90)*5/180 + 5;
+void set_servo_angle(struct servo * servo, float angle) {
+    uint8_t duty_cycle = (uint8_t) ((angle+90.0)*9.0/180.0 + 1.0);
+    printf("%d\n", duty_cycle);
     set_servo_pwm(servo, duty_cycle);
 }
 
@@ -27,5 +28,5 @@ void set_servo_pwm(struct servo * servo, uint8_t duty_cycle){
 
 void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
 {
-    printf("PWM Initialized\n");
+    // printf("PWM Initialized\n");
 }
