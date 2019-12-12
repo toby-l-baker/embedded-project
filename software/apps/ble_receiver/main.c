@@ -66,7 +66,7 @@ static simple_ble_char_t turn_char = {.uuid16 = 0xeda4};
 int8_t turn_angle=0;
 
 static simple_ble_char_t path_char = {.uuid16 = 0xeda5};
-float[2] path_plan;
+float* path_plan;
 
 simple_ble_app_t* simple_ble_app;
 
@@ -89,6 +89,8 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
       } else {
         bike_state = OFF;
       }
+    } else if (simple_ble_is_char_event(p_ble_evt, &turn_char)) {
+      auto_state = DRIVE;
     }
 }
 
@@ -178,8 +180,8 @@ int main(void) {
       &bike_srv, &turn_char);
 
   simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(path_plan), (float*)&path_plan,
-      &bike_srv, &turn__char);
+      sizeof(*path_plan), (float*)path_plan,
+      &bike_srv, &path_char);
   // loop forever, running state machine
   while (1) {
     char print_string[16];
@@ -189,7 +191,7 @@ int main(void) {
 
       /*** BIKE OFF, ONLY BALANCING ***/
       case OFF: {
-        print_state(bike_state);
+        // print_state(bike_state);
         sprintf(print_string, "                ");
         display_write("OFF", DISPLAY_LINE_0);
         display_write(print_string, DISPLAY_LINE_1);
@@ -199,28 +201,28 @@ int main(void) {
 
       /*** MANUAL CONTROL OF THE BIKE ***/
       case MANUAL: {
-        print_state(bike_state);
+        // print_state(bike_state);
         sprintf(print_string, "Spd:%d  Ang:%d", drive_speed, turn_angle);
         display_write("MANUAL", DISPLAY_LINE_0);
         display_write(print_string, DISPLAY_LINE_1);
+        // printf("Speed:%d, Turn Angle:%d\n", drive_speed, turn_angle);
         // move with an angle and speed determined by the joystick
         break;
       }
 
       /*** AUTOOMOUS CONTROL OF THE BIKE ***/
       case AUTONOMOUS: {
-        print_state(bike_state);
+        // print_state(bike_state);
         display_write("AUTONOMOUS", DISPLAY_LINE_0);
         switch(auto_state){
           /*** GET THE PATH FOR THE BIKE TO AUTONOMOUSLY FOLLOW ***/
+          float actual_path_plan;
           case GET_PATH: {
             //Integrate the joystick to get a vector
             printf("Getting path\n");
-            if ((path_plan[0] != 0) && (path_plan[1] != 0) {
-              auto_state = DRIVE;
-              sprintf(print_string, "r:%d  theta:%d", path_plan[0], path_plan[1]);
-              display_write(print_string, DISPLAY_LINE_1);
-            }
+            // actual_path_plan = (float)  path_plan;
+            sprintf(print_string, "r:%f  theta:%f", path_plan[0], path_plan[1]);
+            display_write(print_string, DISPLAY_LINE_1);
             break;
           }
           /*** FOLLOW THE SET PATH ***/
@@ -234,6 +236,6 @@ int main(void) {
         break;
       }
     }
-    nrf_delay_ms(10);
+    nrf_delay_ms(5);
   }
 }

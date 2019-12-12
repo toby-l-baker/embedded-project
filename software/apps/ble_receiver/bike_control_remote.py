@@ -25,22 +25,26 @@ class States(Enum):
     AUTONOMOUS=1
     MANUAL=2
 
+# TO RUN THIS CODE sudo python3 bike_control_remote.py c0:98:e5:49:00:0b
+
+
 class BikeController():
 
     def __init__(self, address):
 
-        # self.bike = Peripheral(addr)
-        # sv = self.bike.getServiceByUUID(SERVICE_UUID)
-        # self.manual_char = sv.getCharacteristics(CHAR_UUIDS[0])[0]
-        # self.power_char = sv.getCharacteristics(CHAR_UUIDS[1])[0]
-        # self.drive_char = sv.getCharacteristics(CHAR_UUIDS[2])[0]
-        # self.turn_char = sv.getCharacteristics(CHAR_UUIDS[3])[0]
-        # self.path_char = sv.getCharacteristics(CHAR_UUIDS[4])[0]
+        self.bike = Peripheral(addr)
+        self.sv = self.bike.getServiceByUUID(SERVICE_UUID)
+        self.manual_char = self.sv.getCharacteristics(CHAR_UUIDS[0])[0]
+        self.power_char = self.sv.getCharacteristics(CHAR_UUIDS[1])[0]
+        self.drive_char = self.sv.getCharacteristics(CHAR_UUIDS[2])[0]
+        self.turn_char = self.sv.getCharacteristics(CHAR_UUIDS[3])[0]
+        self.path_char = self.sv.getCharacteristics(CHAR_UUIDS[4])[0]
 
         print("connected")
         # Setup the gamepad and print its information
-        self.gamepad = InputDevice('/dev/input/event5')
+        self.gamepad = InputDevice('/dev/input/event7')
         print(self.gamepad)
+        self.count = 0
 
         # keep state for button presses
         self.buttons = {"A": 305, "B": 306, "START": 316, "UP": 313, "JOY_X": 0, "JOY_Y": 1}
@@ -81,9 +85,9 @@ class BikeController():
 
     def convert_to_uint(self, num):
         if num < 0:
-            return 256 - num
+            return np.uint8(256 + num)
         else:
-            return num
+            return np.uint8(num)
 
     def map_angle_path(self):
         ang = np.arctan2(-self.x, self.y)*180/np.pi - 180
@@ -101,31 +105,36 @@ class BikeController():
                 if event.code == self.buttons["A"] and event.value == 1:
                     self.state = States.AUTONOMOUS
                     print(self.state)
-                    # self.manual_char.write(bytes[False])
+                    self.manual_char.write(bytes([False]))
+                    time.sleep(0.1)
 
                 '''Set the state to be Manual when pressing B'''
                 if event.code == self.buttons["B"] and event.value == 1:
                     self.state = States.MANUAL
                     print(self.state)
-                    # self.manual_char.write(bytes[True])
+                    self.manual_char.write(bytes([True]))
+                    time.sleep(0.1)
 
                 '''Toggle state when pressing start'''
                 if event.code == self.buttons["START"] and event.value == 1:
                     if self.state == States.IDLE:
                         self.state = States.MANUAL
                         print(self.state)
-                        # self.manual_char.write(bytes[True])
+                        self.manual_char.write(bytes([True]))
+                        time.sleep(0.1)
                     else:
                         self.state = States.IDLE
                         print(self.state)
-                        # self.power_char.write(bytes([False]))
+                        self.power_char.write(bytes([False]))
+                        time.sleep(0.1)
 
                 '''Send path to follow'''
                 if event.code == self.buttons["UP"] and event.value == 1:
                     if self.state == States.AUTONOMOUS:
                         path = [self.path_length, np.average(self.path_angles)]
                         print("(r, theta): ({},{})".format(path[0], path[1]))
-                        # self.path_char.write(bytes[path])
+                        self.path_char.write(bytes([path]))
+                        time.sleep(0.1)
                         self.path_length = 0
                         self.path_angles = []
 
@@ -145,13 +154,21 @@ class BikeController():
 
                     '''Update Angle'''
                     self.map_angle()
-                    print("Turn Angle: {}".format(self.angle))
-                    # self.turn_char.write(bytes([self.convert_to_uint(self.angle)]))
+                    angle = self.convert_to_uint(self.angle)
+                    print("Turn Angle: {}".format(angle))
+                    # time.sleep(0.05)
 
                     '''Update Speed'''
                     self.map_speed()
-                    print("Drive Speed: {}".format(self.speed))
-                    # self.drive_char.write(bytes([self.convert_to_uint(self.speed)]))
+                    speed = self.convert_to_uint(self.speed)
+                    print("Drive Speed: {}".format(speed))
+                    if self.count == 10 or (speed == 0 and angle == 0):
+                        self.drive_char.write(bytes([speed]))
+                        self.turn_char.write(bytes([angle]))
+                        self.count = 0
+                    # time.sleep(0.05)
+
+                    self.count += 1
 
                 if self.state == States.AUTONOMOUS:
                     self.path_angles.append(self.map_angle_path())
@@ -159,9 +176,6 @@ class BikeController():
                     self.path_length += self.int_const * self.speed
                     print("Current Path Plan (r, theta): ({},{})", self.path_length, np.average(self.path_angles))
 
-
-if __name__ == "__main__":
-    bike = BikeController(addr)
+with BikeController(addr) as bike:
+    print('Use Start, A, B and Joystick to control the bike')
     bike.run()
-# with BikeController(addr) as bike:
-#     getpass('Use Start, A, B and Joystick to control the bike')
