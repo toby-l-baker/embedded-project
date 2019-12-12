@@ -28,9 +28,11 @@
 #include "simple_ble.h"
 
 #include "states.h"
+#include "servo.h"
 
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
+APP_PWM_INSTANCE(PWM2, 1);
 
 int driveMotor;
 int servoMotor;
@@ -72,6 +74,7 @@ simple_ble_app_t* simple_ble_app;
 
 bike_states bike_state;
 autonomous_states auto_state;
+
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: logic for each characteristic and related state changes
@@ -182,6 +185,16 @@ int main(void) {
   simple_ble_add_characteristic(1, 1, 0, 0,
       sizeof(*path_plan), (float*)path_plan,
       &bike_srv, &path_char);
+
+  struct servo * front = create_servo(27, PWM_CHANNEL_0, &PWM2);
+  /* Initialize 1 CH PWM, 50 Hz */
+  app_pwm_config_t pwm_cfg = APP_PWM_DEFAULT_CONFIG_1CH(20000L, front->pin_nb);
+
+  /* Switch the polarity of the first channel. */
+  pwm_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
+  error_code = app_pwm_init(&PWM2, &pwm_cfg, pwm_ready_callback);
+  APP_ERROR_CHECK(error_code);
+  app_pwm_enable(&PWM2);
   // loop forever, running state machine
   while (1) {
     char print_string[16];
@@ -203,6 +216,7 @@ int main(void) {
       case MANUAL: {
         // print_state(bike_state);
         sprintf(print_string, "Spd:%d  Ang:%d", drive_speed, turn_angle);
+        set_servo_angle(front, (float) turn_angle);
         display_write("MANUAL", DISPLAY_LINE_0);
         display_write(print_string, DISPLAY_LINE_1);
         // printf("Speed:%d, Turn Angle:%d\n", drive_speed, turn_angle);

@@ -17,7 +17,6 @@
 #include "nrf_pwr_mgmt.h"
 #include "nrf_serial.h"
 #include "nrfx_gpiote.h"
-#include "nrfx_saadc.h"
 #include "app_pwm.h"
 
 #include "buckler.h"
@@ -26,7 +25,7 @@
 
 #define PIN_NB 27
 
-/* Initialize PWM2 on TIMER 1 */ 
+/* Initialize PWM2 on TIMER 1 */
 APP_PWM_INSTANCE(PWM2,1);
 
 /* CODE RESOURCES */
@@ -46,14 +45,14 @@ int main (void) {
     printf("Buckler initialized!\n");
     // printf("%d\n", (uint8_t) ((-50.0+90.0)*9.0/180.0 + 1.0));
     /* Create Motor Structs */
-    
+
 	// nrf_gpio_pin_set(drive->enable);
-	
+
 	// while(1){
 	// 	nrf_delay_ms(25);
 	// }
-  
- 
+
+
 
     struct servo * front = create_servo(PIN_NB, PWM_CHANNEL_0, &PWM2);
 
@@ -74,15 +73,15 @@ int main (void) {
     uint8_t duty_cycle;
     // loop forever
     while(1) {
-      // for(int i=1; i < 11; i++) {
-      //   set_servo_pwm(front, i);
-      //   printf("%d\n", i);
-      //   nrf_delay_ms(500);
-      // }
-        //set_servo_pwm(front,5.5);
-        set_servo_angle(front,-50.0);
-
+      for(int i=-50; i < 50; i++) {
+        set_servo_angle(front, i);
+        printf("%d\n", i);
+        nrf_delay_ms(50);
+      }
+      for(int i=50; i > -50; i--) {
+        set_servo_angle(front, i);
+        printf("%d\n", i);
+        nrf_delay_ms(50);
+      }
     }
-
-    nrf_delay_ms(100);
 }
