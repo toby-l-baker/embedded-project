@@ -16,20 +16,7 @@ void initialize_buckler(){
 
 
 
-// void initialize_dc_motor_pwm_hold(struct dc_motor* motor_1, struct dc_motor* motor_2){
-// 	APP_PWM_INSTANCE(PWM0, DC_MOTOR_TIMER);
-// 	motor_1->pwm_inst = motor_2->pwm_inst = &PWM0;
 
-// 	app_pwm_config_t cfg = APP_PWM_DEFAULT_CONFIG_2CH(DC_MOTOR_FREQ, motor_1->enable, motor_2->enable);
-// 	cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
-//     cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
-
-//     error_code = app_pwm_init(&PWM0, &cfg, pwm_ready_callback);
-//     APP_ERROR_CHECK(error_code);
-//     app_pwm_enable(&PWM0);
-
-//     return;
-// }
 
 void initialize_dc_motor_pwm(struct dc_motor* motor_1, struct dc_motor* motor_2){
 	ret_code_t error_code = NRF_SUCCESS;
@@ -62,17 +49,6 @@ void initialize_dc_motor_pwm(struct dc_motor* motor_1, struct dc_motor* motor_2)
 
 }
 
-// void initialize_servo_motor_pwm(struct servo_motor* motor){
-// 	APP_PWM_INSTANCE(PWM1, SERVO_MOTOR_TIMER);
-// 	motor->pwm_inst = &PWM1;
-
-// 	app_pwm_config_t cfg = APP_PWM_DEFAULT_CONFIG_1CH(SERVO_MOTOR_FREQ, motor->ctrl);
-// 	cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
-
-// 	error_code = app_pwm_init(&PWM1, &cfg, pwm_ready_callback);
-// 	APP_ERROR_CHECK(error_code);
-// 	app_pwm_enable(&PWM1);
-// }
 
 
 void pwm_ready_callback(uint32_t pwm_num){

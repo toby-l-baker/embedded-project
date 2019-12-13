@@ -13,9 +13,9 @@
 #define STOP				0
 
 // Pins used forthe dc motor driving the flywheel
-#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,19)
-#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,20)
-#define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,23)
+#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,12)
+#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,23)
+#define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,2)
 
 //Pins used for the dc motor driving the drive wheel
 #define DRIVE_PIN_ENABLE NRF_GPIO_PIN_MAP(0,3)

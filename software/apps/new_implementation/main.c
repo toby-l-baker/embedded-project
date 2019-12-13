@@ -2,9 +2,10 @@
 #include "setup.h"
 #include "motor.h"
 #include "board_params.h"
-#include "read_angle_filt.h"
-#include "read_angle.h"
 #include "timer_module.h"
+#include "mpu.h"
+
+
 
 int main(){
 
@@ -14,18 +15,35 @@ int main(){
     struct dc_motor * drive = create_dc_motor(DRIVE_PIN_ENABLE, DRIVE_PIN_IN1, DRIVE_PIN_IN2, DRIVE_MOTOR_CHANNEL);
     initialize_dc_motor_pwm(flywheel, drive);
 
+    
+    init_mpu9250();
+  
 
-
-    printf("compiled\n");
+    angles_t * angles = malloc(sizeof(angles_t));
 
     init_timer();
-    printf("Sick dawg\n");
+    
+    /*typedef struct angles_t {
+  float theta_x;
+  float theta_y;
+  float theta_z;
+  float timestamp;
+} angles_t;
+*/
     while(true){
 
-        printf("%u\n", read_timer_p());
-        nrf_delay_ms(500);
-    }
+        // waste_time();
+        
 
+        update_angles(angles);
+        printf("X: %f, Y: %f, Z: %f\n", angles->theta_x, angles->theta_y, angles->theta_z);
+       
+        // nrf_delay_ms(1);
+       
+        nrf_delay_ms(1);
+        
+    }
+    print_timer_vals();
 
  //    printf("Setting up sensors...\n");
  //    struct angles_t* angles = malloc(sizeof(struct angles_t));

@@ -1,22 +1,26 @@
 #include "timer_module.h"
 
 
-uint32_t recorded_vals[NUM_LOOPS] = {0};
-int current_idx = 0;
+static uint32_t recorded_vals[NUM_LOOPS] = {0};
+static int current_idx = 0;
 
-uint32_t start_val = 0;
-uint32_t end_val = 0;
+static uint32_t start_val = 0;
+static uint32_t end_val = 0;
 
 
 // nrfx_timer_t TIMER = NRFX_TIMER_INSTANCE(4);
 
 void start_timer(){
 	start_val = get_timer_value();
+	// printf("%u\n", start_val);
 }
 
 void end_timer(){
 	end_val = get_timer_value();
+	// printf("%u\n", end_val);
 	recorded_vals[current_idx++] = end_val - start_val;
+	
+	start_val = end_val = 0;
 }
 
 uint32_t get_timer_value() {
@@ -27,18 +31,18 @@ uint32_t get_timer_value() {
 
 void print_timer_vals(){
 	for (int i =0; i < NUM_LOOPS; i++){
-		printf("%u, ", recorded_vals[i]);
+		printf("%f, ", (float)(recorded_vals[i]/16.0*1000.0));
 	}
 
 
 }
 
-void init_timer(uint32_t num_times) {
-	Num_Loops = num_times;
-	NRF_TIMER4->BITMODE |= 3;
-	NRF_TIMER4->PRESCALER |= 4; // Read at 16 Mhz / 16 = 1MHz
-	NRF_TIMER4->TASKS_CLEAR |= 1; //Set TASKS_CLEAR
-	NRF_TIMER4->TASKS_START |= 1; //Set TASKS_START
-	NRF_TIMER4->INTENSET |= 1<<16; //Enable interrupts for CC[0]
+void init_timer() {
+
+	NRF_TIMER4->BITMODE = 3;
+	NRF_TIMER4->PRESCALER = 0; // Read at 16 Mhz / 16 = 1MHz
+	NRF_TIMER4->TASKS_CLEAR = 1; //Set TASKS_CLEAR
+	NRF_TIMER4->TASKS_START = 1; //Set TASKS_START
+	NRF_TIMER4->INTENSET = 1<<16; //Enable interrupts for CC[0]
 	NVIC_EnableIRQ(TIMER4_IRQn);
 }
