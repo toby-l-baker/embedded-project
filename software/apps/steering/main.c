@@ -73,15 +73,35 @@ int main (void) {
     uint8_t duty_cycle;
     // loop forever
     while(1) {
-      for(int i=-50; i < 50; i++) {
-        set_servo_angle(front, i);
-        printf("%d\n", i);
-        nrf_delay_ms(50);
-      }
-      for(int i=50; i > -50; i--) {
-        set_servo_angle(front, i);
-        printf("%d\n", i);
-        nrf_delay_ms(50);
-      }
+      // for(int i=0; i < 20; i++) {
+      //   set_servo_pwm(front, i);
+      //   printf("%d\n", i);
+      //   nrf_delay_ms(1000);
+      // }
+      // for(int i=20; i > 0; i--) {
+      //   set_servo_pwm(front, i);
+      //   printf("%d\n", i);
+      //   nrf_delay_ms(1000);
+      // }
+
+  //    set_servo_pwm(front, (13));
+   //   printf("13\n");
+    //  nrf_delay_ms(1000);
+
+   //   set_servo_pwm(front, (11/2 + 2));
+   //   nrf_delay_ms(1000);
+   //   printf("7.5\n");
+
+      set_servo_angle(front, (45));
+      nrf_delay_ms(1000);
+      //printf("145\n");
+
+      set_servo_angle(front, (0));
+      nrf_delay_ms(1000);
+      //printf("7.5\n");
+
+      set_servo_angle(front, (-45));
+      nrf_delay_ms(1000);
+      //printf("13\n");
     }
 }

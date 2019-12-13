@@ -42,7 +42,7 @@ class BikeController():
 
         print("connected")
         # Setup the gamepad and print its information
-        self.gamepad = InputDevice('/dev/input/event7')
+        self.gamepad = InputDevice('/dev/input/event5')
         print(self.gamepad)
         self.count = 0
 
@@ -162,7 +162,7 @@ class BikeController():
                     self.map_speed()
                     speed = self.convert_to_uint(self.speed)
                     print("Drive Speed: {}".format(speed))
-                    if self.count == 10 or (speed == 0 and angle == 0):
+                    if self.count == 6 or (speed == 0 and angle == 0):
                         self.drive_char.write(bytes([speed]))
                         self.turn_char.write(bytes([angle]))
                         self.count = 0
