@@ -17,10 +17,12 @@ int main(){
 
     
     init_mpu9250();
+    init_mpu9250_timer(IMU_TIMER_REFRESH_RATE); 
   
 
     angles_t * angles = malloc(sizeof(angles_t));
-
+    float duty_cycle = 0;
+    int8_t direction = STOP;
     init_timer();
     
     /*typedef struct angles_t {
@@ -29,21 +31,33 @@ int main(){
   float theta_z;
   float timestamp;
 } angles_t;
+
 */
+    uint32_t i =0;
+    // while(i++ < NUM_LOOPS){
     while(true){
 
         // waste_time();
-        
+        // start_timer();
 
         update_angles(angles);
-        printf("X: %f, Y: %f, Z: %f\n", angles->theta_x, angles->theta_y, angles->theta_z);
+        duty_cycle_PWM_PID(angles->theta_x, angles->time_stamp, &duty_cycle, &direction);
+        printf("Timestamp %f\n", angles->time_stamp);
+        printf("Angle %f\n", angles->theta_x );
+        printf("Direction %d\n", direction);
+        printf("Duty cycle %f\n\n", duty_cycle);
+
+        // printf("X: %f, Y: %f, Z: %f\n", angles->theta_x, angles->theta_y, angles->theta_z);
+        // end_timer();
+        // if (! ((i++) % 100) )
+            // 
        
         // nrf_delay_ms(1);
        
-        nrf_delay_ms(1);
+        nrf_delay_ms(10);
         
     }
-    print_timer_vals();
+    // print_timer_vals();
 
  //    printf("Setting up sensors...\n");
  //    struct angles_t* angles = malloc(sizeof(struct angles_t));

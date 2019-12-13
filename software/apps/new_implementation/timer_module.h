@@ -6,6 +6,7 @@
 #include "nrf.h"
 
 #define NUM_LOOPS 100
+#define PRESCALE_CONV 62.5
 
 void init_timer();
 

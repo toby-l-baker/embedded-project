@@ -23,15 +23,24 @@ void end_timer(){
 	start_val = end_val = 0;
 }
 
+float timestamp(){
+	return (float)(get_timer_value()) * PRESCALE_CONV;
+}
+
 uint32_t get_timer_value() {
 	NRF_TIMER4->TASKS_CAPTURE[1] |= 1;
 	uint32_t timer_value = NRF_TIMER4->CC[1];
 	return timer_value;
 }
 
+float convert(uint32_t time){
+	return time * PRESCALE_CONV;
+
+}
+
 void print_timer_vals(){
 	for (int i =0; i < NUM_LOOPS; i++){
-		printf("%f, ", (float)(recorded_vals[i]/16.0*1000.0));
+		printf("%f, ", (float)(recorded_vals[i]* PRESCALE_CONV));
 	}
 
 
@@ -44,5 +53,5 @@ void init_timer() {
 	NRF_TIMER4->TASKS_CLEAR = 1; //Set TASKS_CLEAR
 	NRF_TIMER4->TASKS_START = 1; //Set TASKS_START
 	NRF_TIMER4->INTENSET = 1<<16; //Enable interrupts for CC[0]
-	NVIC_EnableIRQ(TIMER4_IRQn);
+	// NVIC_EnableIRQ(TIMER4_IRQn);
 }

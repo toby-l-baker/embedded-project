@@ -12,7 +12,7 @@ typedef struct angles_t {
   float theta_x;
   float theta_y;
   float theta_z;
-  float timestamp;
+  float time_stamp;
 } angles_t;
 
 typedef struct Quaternion {
