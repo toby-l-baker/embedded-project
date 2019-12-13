@@ -28,11 +28,11 @@
 #include "simple_ble.h"
 
 #include "states.h"
-#include "servo.h"
+#include "servo_driver.h"
 
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
-APP_PWM_INSTANCE(PWM2, 1);
+APP_PWM_INSTANCE(PWM2, 3);
 
 int driveMotor;
 int servoMotor;
