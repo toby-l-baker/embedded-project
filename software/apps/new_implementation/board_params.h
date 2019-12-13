@@ -13,9 +13,9 @@
 #define STOP				0
 
 // Pins used forthe dc motor driving the flywheel
-#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,19)
-#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,20)
-#define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,23)
+#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,12)
+#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,23)
+#define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,2)
 
 //Pins used for the dc motor driving the drive wheel
 #define DRIVE_PIN_ENABLE NRF_GPIO_PIN_MAP(0,3)
@@ -53,6 +53,47 @@
 #define NUM_SAMPLES 4096
 #define LEN_BUFFER 30
 
+#define IMU_TIMER_REFRESH_RATE 1.0
+
+
+
+/*************** PID torque values **************/
+
+//Proportional control
+#define Kp_torque 		-.3
+
+//Derivative constant
+#define Kd_torque 		-0
+
+//Integral constant
+#define Ki_torque 		0
+
+/*************** PID PWM values **************/
+
+//Proportional control
+#define Kp_PWM 			-30.0
+
+//Derivative constant
+#define Kd_PWM 			-0.0
+
+//Integral constant
+#define Ki_PWM 			0.0
+
+/************** Proportionnal torque value **************/
+
+#define Kp_torque_prop 	-0.2
+
+/************** This anti-windup constant prevents the integral 
+from becoming to big and improves system stability ************/
+
+#define Kw 				0.95 //It should be less that 1
+
+
+
+
+
+#define MIN_DUTY_CYCLE 10
+#define MAX_DUTY_CYCLE 100
 
 
 #endif
