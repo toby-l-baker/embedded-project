@@ -29,13 +29,13 @@
 
 #include "states.h"
 #include "servo_driver.h"
+#include "motor.h"
 
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
-APP_PWM_INSTANCE(PWM2, 3);
 
-int driveMotor;
-int servoMotor;
+/* Create PWM instance for Servo. */
+APP_PWM_INSTANCE(PWM2, 3);
 
 // Intervals for advertising and connections
 static simple_ble_config_t ble_config = {
@@ -117,139 +117,161 @@ void print_state(bike_states current_state){
 }
 
 int main(void) {
-  ret_code_t error_code = NRF_SUCCESS;
+    ret_code_t error_code = NRF_SUCCESS;
 
-  // initialize RTT library
-  error_code = NRF_LOG_INIT(NULL);
-  APP_ERROR_CHECK(error_code);
-  NRF_LOG_DEFAULT_BACKENDS_INIT();
-  printf("Log initialized!\n");
+	// initialize RTT library
+	error_code = NRF_LOG_INIT(NULL);
+	APP_ERROR_CHECK(error_code);
+	NRF_LOG_DEFAULT_BACKENDS_INIT();
+	printf("Log initialized!\n");
 
-  // Setup BLE
-  simple_ble_app = simple_ble_init(&ble_config);
+	// Setup BLE
+	simple_ble_app = simple_ble_init(&ble_config);
 
-  simple_ble_add_service(&bike_srv);
+	simple_ble_add_service(&bike_srv);
 
-  // Start Advertising
-  simple_ble_adv_only_name();
+	// Start Advertising
+	simple_ble_adv_only_name();
 
-  // initialize LEDs
-  nrf_gpio_pin_dir_set(23, NRF_GPIO_PIN_DIR_OUTPUT);
-  nrf_gpio_pin_dir_set(24, NRF_GPIO_PIN_DIR_OUTPUT);
-  nrf_gpio_pin_dir_set(25, NRF_GPIO_PIN_DIR_OUTPUT);
+	// initialize LEDs
+	// nrf_gpio_pin_dir_set(23, NRF_GPIO_PIN_DIR_OUTPUT);
+	// nrf_gpio_pin_dir_set(24, NRF_GPIO_PIN_DIR_OUTPUT);
+	// nrf_gpio_pin_dir_set(25, NRF_GPIO_PIN_DIR_OUTPUT);
 
-  // initialize display
-  nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
-  nrf_drv_spi_config_t spi_config = {
-    .sck_pin = BUCKLER_LCD_SCLK,
-    .mosi_pin = BUCKLER_LCD_MOSI,
-    .miso_pin = BUCKLER_LCD_MISO,
-    .ss_pin = BUCKLER_LCD_CS,
-    .irq_priority = NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY,
-    .orc = 0,
-    .frequency = NRF_DRV_SPI_FREQ_4M,
-    .mode = NRF_DRV_SPI_MODE_2,
-    .bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST
-  };
-  error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
-  APP_ERROR_CHECK(error_code);
-  display_init(&spi_instance);
-  printf("Display initialized!\n");
+	// initialize display
+	// nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
+	// nrf_drv_spi_config_t spi_config = {
+	// .sck_pin = BUCKLER_LCD_SCLK,
+	// .mosi_pin = BUCKLER_LCD_MOSI,
+	// .miso_pin = BUCKLER_LCD_MISO,
+	// .ss_pin = BUCKLER_LCD_CS,
+	// .irq_priority = NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY,
+	// .orc = 0,
+	// .frequency = NRF_DRV_SPI_FREQ_4M,
+	// .mode = NRF_DRV_SPI_MODE_2,
+	// .bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST
+	// };
+	// error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
+	// APP_ERROR_CHECK(error_code);
+	// display_init(&spi_instance);
+	// printf("Display initialized!\n");
 
-  // initialize i2c master (two wire interface)
-  nrf_drv_twi_config_t i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
-  i2c_config.scl = BUCKLER_SENSORS_SCL;
-  i2c_config.sda = BUCKLER_SENSORS_SDA;
-  i2c_config.frequency = NRF_TWIM_FREQ_100K;
-  error_code = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
-  APP_ERROR_CHECK(error_code);
-  mpu9250_init(&twi_mngr_instance);
-  printf("IMU initialized!\n");
+	// initialize i2c master (two wire interface)
+	nrf_drv_twi_config_t i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
+	i2c_config.scl = BUCKLER_SENSORS_SCL;
+	i2c_config.sda = BUCKLER_SENSORS_SDA;
+	i2c_config.frequency = NRF_TWIM_FREQ_100K;
+	error_code = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
+	APP_ERROR_CHECK(error_code);
+	mpu9250_init(&twi_mngr_instance);
+	printf("IMU initialized!\n");
 
-  simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(manual_control), (uint8_t*)&manual_control,
-      &bike_srv, &manual_char);
+	simple_ble_add_characteristic(1, 1, 0, 0,
+	  sizeof(manual_control), (uint8_t*)&manual_control,
+	  &bike_srv, &manual_char);
 
-  simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(power), (uint8_t*)&power,
-      &bike_srv, &power_char);
+	simple_ble_add_characteristic(1, 1, 0, 0,
+	  sizeof(power), (uint8_t*)&power,
+	  &bike_srv, &power_char);
 
-  simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(drive_speed), (uint8_t*)&drive_speed,
-      &bike_srv, &drive_char);
+	simple_ble_add_characteristic(1, 1, 0, 0,
+	  sizeof(drive_speed), (uint8_t*)&drive_speed,
+	  &bike_srv, &drive_char);
 
-  simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(turn_angle), (uint8_t*)&turn_angle,
-      &bike_srv, &turn_char);
+	simple_ble_add_characteristic(1, 1, 0, 0,
+	  sizeof(turn_angle), (uint8_t*)&turn_angle,
+	  &bike_srv, &turn_char);
 
-  simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(*path_plan), (float*)path_plan,
-      &bike_srv, &path_char);
+	simple_ble_add_characteristic(1, 1, 0, 0,
+	  sizeof(*path_plan), (float*)path_plan,
+	  &bike_srv, &path_char);
 
-  struct servo * front = create_servo(27, PWM_CHANNEL_0, &PWM2);
-  /* Initialize 1 CH PWM, 50 Hz */
-  app_pwm_config_t pwm_cfg = APP_PWM_DEFAULT_CONFIG_1CH(20000L, front->pin_nb);
+	/* Initialize servo. */
+	struct servo * front = create_servo(SERVO_PIN, PWM_CHANNEL_0, &PWM2);
+	/* Initialize 1 CH PWM, 50 Hz */
+	app_pwm_config_t pwm_cfg = APP_PWM_DEFAULT_CONFIG_1CH(20000L, front->pin_nb);
+	/* Switch the polarity of the first channel. */
+	pwm_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
+	error_code = app_pwm_init(&PWM2, &pwm_cfg, pwm_ready_callback);
+	APP_ERROR_CHECK(error_code);
+	app_pwm_enable(&PWM2);
 
-  /* Switch the polarity of the first channel. */
-  pwm_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
-  error_code = app_pwm_init(&PWM2, &pwm_cfg, pwm_ready_callback);
-  APP_ERROR_CHECK(error_code);
-  app_pwm_enable(&PWM2);
-  // loop forever, running state machine
-  while (1) {
-    char print_string[16];
-    // read sensors from robot
-    // TODO: complete state machine
-    switch(bike_state) {
+	struct dc_motor * flywheel = create_dc_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, FlYWHEEL_MOTOR_CHANNEL);
+	struct dc_motor * drive = create_dc_motor(DRIVE_PIN_ENABLE, DRIVE_PIN_IN1, DRIVE_PIN_IN2, DRIVE_MOTOR_CHANNEL);
+	initialize_dc_motor_pwm(flywheel, drive);
 
-      /*** BIKE OFF, ONLY BALANCING ***/
-      case OFF: {
-        // print_state(bike_state);
-        sprintf(print_string, "                ");
-        display_write("OFF", DISPLAY_LINE_0);
-        display_write(print_string, DISPLAY_LINE_1);
-        // transition logic handled by ble_evt_write
-        break; // each case needs to end with break!
-      }
+	float duty_cycle = 0;
+    int8_t direction = STOP;
 
-      /*** MANUAL CONTROL OF THE BIKE ***/
-      case MANUAL: {
-        // print_state(bike_state);
-        sprintf(print_string, "Spd:%d  Ang:%d", drive_speed, turn_angle);
-        set_servo_angle(front, (float) turn_angle);
-        display_write("MANUAL", DISPLAY_LINE_0);
-        display_write(print_string, DISPLAY_LINE_1);
-        // printf("Speed:%d, Turn Angle:%d\n", drive_speed, turn_angle);
-        // move with an angle and speed determined by the joystick
-        break;
-      }
 
-      /*** AUTOOMOUS CONTROL OF THE BIKE ***/
-      case AUTONOMOUS: {
-        // print_state(bike_state);
-        display_write("AUTONOMOUS", DISPLAY_LINE_0);
-        switch(auto_state){
-          /*** GET THE PATH FOR THE BIKE TO AUTONOMOUSLY FOLLOW ***/
-          float actual_path_plan;
-          case GET_PATH: {
-            //Integrate the joystick to get a vector
-            printf("Getting path\n");
-            // actual_path_plan = (float)  path_plan;
-            sprintf(print_string, "r:%f  theta:%f", path_plan[0], path_plan[1]);
-            display_write(print_string, DISPLAY_LINE_1);
-            break;
-          }
-          /*** FOLLOW THE SET PATH ***/
-          case DRIVE: {
-            //Get to our goal!!
-            printf("Navigating to path\n");
-            //Keep navigating to our goal pos
-            break;
-          }
-        }
-        break;
-      }
-    }
-    nrf_delay_ms(5);
-  }
+	// loop forever, running state machine
+	while (1) {
+	char print_string[16];
+	// read sensors from robot
+	// TODO: complete state machine
+	switch(bike_state) {
+
+	  /*** BIKE OFF, ONLY BALANCING ***/
+	  case OFF: {
+	    print_state(bike_state);
+	    sprintf(print_string, "                ");
+	    // display_write("OFF", DISPLAY_LINE_0);
+	    // display_write(print_string, DISPLAY_LINE_1);
+	    // transition logic handled by ble_evt_write
+	    break; // each case needs to end with break!
+	  }
+
+	  /*** MANUAL CONTROL OF THE BIKE ***/
+	  case MANUAL: {
+	    sprintf(print_string, "Spd:%d  Ang:%d", drive_speed, turn_angle);
+	    print_state(bike_state);
+
+	    //set servo angle
+	    set_servo_angle(front, (float) turn_angle); 
+
+	    if (drive_speed < 0){
+	    	// if speed is negative reverse
+	    	set_dc_motor_direction(drive, REVERSE); 
+	    } else {
+	    	// if speed is positive move forward
+	    	set_dc_motor_direction(drive, FORWARD); 
+	    }
+	    // set the PWM to the speed TODO: Map speed to PWM
+		set_dc_motor_pwm(drive, drive_speed); 
+
+		// write to display for debugginh
+	    // display_write("MANUAL", DISPLAY_LINE_0);
+	    // display_write(print_string, DISPLAY_LINE_1);
+
+	    break;
+	  }
+
+	  /*** AUTOOMOUS CONTROL OF THE BIKE ***/
+	  case AUTONOMOUS: {
+	    print_state(bike_state);
+	    // display_write("AUTONOMOUS", DISPLAY_LINE_0);
+	    switch(auto_state){
+	      /*** GET THE PATH FOR THE BIKE TO AUTONOMOUSLY FOLLOW ***/
+	      float actual_path_plan;
+	      case GET_PATH: {
+	        //Integrate the joystick to get a vector
+	        printf("Getting path\n");
+	        // actual_path_plan = (float)  path_plan;
+	        sprintf(print_string, "r:%f  theta:%f", path_plan[0], path_plan[1]);
+	        // display_write(print_string, DISPLAY_LINE_1);
+	        break;
+	      }
+	      /*** FOLLOW THE SET PATH ***/
+	      case DRIVE: {
+	        //Get to our goal!!
+	        printf("Navigating to path\n");
+	        //Keep navigating to our goal pos
+	        break;
+	      }
+	    }
+	    break;
+	  }
+	}
+	nrf_delay_ms(5);
+	}
 }
