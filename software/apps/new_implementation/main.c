@@ -11,9 +11,9 @@ int main(){
 
 
 	initialize_buckler();
-	struct dc_motor * flywheel = create_dc_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, FlYWHEEL_MOTOR_CHANNEL);
-    struct dc_motor * drive = create_dc_motor(DRIVE_PIN_ENABLE, DRIVE_PIN_IN1, DRIVE_PIN_IN2, DRIVE_MOTOR_CHANNEL);
-    initialize_dc_motor_pwm(flywheel, drive);
+	// struct dc_motor * flywheel = create_dc_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, FlYWHEEL_MOTOR_CHANNEL);
+ //    struct dc_motor * drive = create_dc_motor(DRIVE_PIN_ENABLE, DRIVE_PIN_IN1, DRIVE_PIN_IN2, DRIVE_MOTOR_CHANNEL);
+ //    initialize_dc_motor_pwm(flywheel, drive);
 
     
     init_mpu9250();
@@ -23,7 +23,7 @@ int main(){
     angles_t * angles = malloc(sizeof(angles_t));
     float duty_cycle = 0;
     int8_t direction = STOP;
-    init_timer();
+    // init_timer();
     
     /*typedef struct angles_t {
   float theta_x;
@@ -41,11 +41,11 @@ int main(){
         // start_timer();
 
         update_angles(angles);
-        duty_cycle_PWM_PID(angles->theta_x, angles->time_stamp, &duty_cycle, &direction);
-        printf("Timestamp %f\n", angles->time_stamp);
-        printf("Angle %f\n", angles->theta_x );
-        printf("Direction %d\n", direction);
-        printf("Duty cycle %f\n\n", duty_cycle);
+        // duty_cycle_PWM_PID(angles->theta_x, angles->time_stamp, &duty_cycle, &direction);
+        // printf("Timestamp %f\n", angles->time_stamp);
+        // printf("Angle %f\n", angles->theta_x );
+        // printf("Direction %d\n", direction);
+        // printf("Duty cycle %f\n\n", duty_cycle);
 
         // printf("X: %f, Y: %f, Z: %f\n", angles->theta_x, angles->theta_y, angles->theta_z);
         // end_timer();
@@ -54,8 +54,9 @@ int main(){
        
         // nrf_delay_ms(1);
        
-        nrf_delay_ms(10);
-        
+        nrf_delay_ms(1);
+        if (i++ % 50 == 0)
+            printf("Angle %f\n", angles->theta_x ); 
     }
     // print_timer_vals();
 
