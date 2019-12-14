@@ -4,8 +4,10 @@
 #include "buckler.h"
 #include "app_pwm.h"
 
-#define PWM_CHANNEL_0   0
-#define PWM_CHANNEL_1   1
+#define PWM_CHANNEL_0 		0
+#define PWM_CHANNEL_1		1
+
+
 
 /* Struct for storing information about each ADC Channel */
 struct servo
@@ -18,12 +20,14 @@ struct servo
 };
 
 
-struct servo * create_servo(uint8_t pin_nb, uint8_t pwm_channel);
+struct servo * create_servo(uint8_t pin_nb, uint8_t pwm_channel, app_pwm_t const * const pwm_inst);
 
 void set_servo_angle(struct servo * servo, float angle);
 
 void set_servo_pwm(struct servo * servo, float duty_cycle);
 
-void pwm_ready_callback(uint32_t pwm_id) ;
+void pwm_ready_callback(uint32_t pwm_id);
+
+float get_front_pwm();
 
 #endif

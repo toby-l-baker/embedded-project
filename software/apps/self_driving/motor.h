@@ -3,6 +3,10 @@
 
 #include "setup.h"
 #include "board_params.h"
+#include "control.h"
+
+
+
 
 struct dc_motor{
 	int8_t direction;
@@ -19,6 +23,8 @@ struct dc_motor * create_dc_motor(uint8_t enable, uint8_t in1, uint8_t in2, uint
 
 void set_dc_motor_direction(struct dc_motor * motor, int8_t direction);
 ret_code_t set_dc_motor_pwm(struct dc_motor * motor, uint8_t duty_cycle);
+ret_code_t set_drive_speed(struct dc_motor * motor, float speed);
+ret_code_t set_drive_PWM(struct dc_motor* motor, int8_t PWM) ;
 // ret_code_t set_servo_motor_pwm(struct servo_motor * motor, uint8_t duty_cycle);
 
 
