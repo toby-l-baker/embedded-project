@@ -1,11 +1,12 @@
 #include <stdlib.h>
-#include <slist.h>
+#include <accel_list.h>
 
-static snode * snode_create(float data)
+static snode * snode_create(float time_stamp, float accel)
 {
     snode * node = malloc(sizeof(snode));
     if (node) {
-        node->data = data;
+        node->time_stamp = time_stamp;
+        node->accel = accel;
         node->next = NULL;
     }
 
@@ -43,9 +44,9 @@ void slist_delete(slist * list)
     }
 }
 
-void slist_add_tail(slist * list, float data)
+void slist_add_tail(slist * list, float time_stamp, float accel)
 {
-    snode * node = snode_create(data);
+    snode * node = snode_create(time_stamp, accel);
     if (list->head == NULL) {
         /* Adding the first node */
         list->head = node;
@@ -58,9 +59,9 @@ void slist_add_tail(slist * list, float data)
     list->count++;
 }
 
-void slist_add_head(slist * list, float data)
+void slist_add_head(slist * list, float time_stamp, float accel)
 {
-    snode * node = snode_create(data);
+    snode * node = snode_create(time_stamp, accel);
     if (list->tail == NULL) {
         /* Adding the first node */
         list->head = node;
@@ -75,7 +76,7 @@ void slist_add_head(slist * list, float data)
 
 float slist_remove_head(slist * list)
 {
-    float data = 0;
+    float data = 0.0;
 
     if (list->head) {
         snode *temp = list->head;
@@ -87,7 +88,7 @@ float slist_remove_head(slist * list)
             list->head = NULL;
             list->tail = NULL;
         }
-        data = temp->data;
+        data = temp->time_stamp;
         free(temp);
         list->count--;
         if (list->count == 1) {
@@ -109,7 +110,7 @@ float slist_remove_tail(slist * list)
             previous = current;
             current = current->next;
         }
-        data = current->data;
+        data = current->time_stamp;
         free(current);
         if (previous) {
             previous->next = NULL;
@@ -136,7 +137,7 @@ float slist_remove(slist *list, snode *node, snode *previous)
     }
     else {
         previous->next = node->next;
-        data = node->data;
+        data = node->time_stamp;
         list->count--;
         if (list->count == 1) {
             list->tail = list->head;
@@ -149,47 +150,6 @@ float slist_remove(slist *list, snode *node, snode *previous)
     return data;
 }
 
-void slist_insert_before(slist * list, snode * node, snode * previous, float data)
-{
-    if (node == list->head) {
-        slist_add_head(list, data);
-    }
-    else {
-        snode * newnode = snode_create(data);
-        newnode->next = node;
-        previous->next = newnode;
-        list->count++;
-    }
-}
-
-snode * slist_insert_after(slist * list, snode * node, float data)
-{
-    snode * newnode;
-    if (node == NULL) {
-        slist_add_head(list, data);
-        newnode = list->head;
-    }
-    else {
-        newnode = snode_create(data);
-        if (newnode) {
-            newnode->next = node->next;
-            node->next = newnode;
-            if (node == list->tail) {
-                list->tail = newnode;
-            }
-        }
-        list->count++;
-    }
-    return newnode;
-}
-
-void slist_for_each(const slist * list, slist_forfn fun)
-{
-    snode * node;
-    for (node = list->head; node != NULL; node = node->next) {
-        fun(node->data);
-    }
-}
 
 unsigned int slist_get_count(const slist * list)
 {

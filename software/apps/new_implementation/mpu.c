@@ -85,6 +85,7 @@ void update_angles(angles_t * angles) {
     // printf("IN update angles.\n");
     angles->time_stamp = timestamp();
 
+
     gyro = mpu9250_read_gyro();
     
     accel = mpu9250_read_accelerometer();

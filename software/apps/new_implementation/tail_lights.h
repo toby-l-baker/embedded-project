@@ -4,7 +4,7 @@
 #include "setup.h"
 #include "board_params.h"
 #include "mpu.h"
-#include "slist.h"
+#include "accel_list.h"
 
 
 void init_tail_lights();

@@ -63,7 +63,7 @@ int main(){
        
         // nrf_delay_ms(1);
        
-        nrf_delay_ms(1);
+        nrf_delay_ms(MS_DELAY);
         // if (i++ % 10 == 0){
         //     printf("Angle %f\n", angles->theta_x ); 
         //     printf("Timestamp %f\n\n", angles->time_stamp);

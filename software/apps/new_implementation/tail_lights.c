@@ -52,8 +52,9 @@ void update_blinkers(int8_t side, float time_stamp){
 	
 	static float Blink_Update_Time = 0.0;
 	// printf("time_stamp: %f, Blink_Update_Time: %f\n", time_stamp, Blink_Update_Time);
-
+	
 	if (delta_time(time_stamp, Blink_Update_Time) >= BLINKER_PERIOD){
+	
 		change_blinker = true;
 		Blink_Update_Time = time_stamp;
 		if (side != prev_side){
@@ -72,8 +73,9 @@ void update_blinkers(int8_t side, float time_stamp){
 			else if (side == LEFT)
 				display_write(LEFT_BLINKER_STRING, DISPLAY_LINE_1);
 		}
-		
 	}
+
+
 
 
 	prev_side = side;
@@ -106,7 +108,7 @@ void update_lights(angles_t * angles){
 		turn_check(angles);
 		
 	}
-
+	
 	brake_check(angles);
 	
 	
@@ -115,31 +117,46 @@ void update_lights(angles_t * angles){
 }
 
 
-
+float average_accel_list(slist* list){
+	snode* node;
+	float average = 0;
+	for (node = list->head; node != NULL; node = node->next){
+		average += node->accel;
+	}
+	return average / (float)(slist_get_count(list));
+}
 // BRAKE_ACCELERATION_TIME_THRESH
 void brake_check(angles_t * angles){
-	printf("Timestamp: %f\n", angles->time_stamp);
+	// printf("Timestamp: %f, Accel %f\n", angles->time_stamp, angles->raw_accel_x);
+	
 	static bool list_empty = true;
 	static slist*  accel_list;
 	static float first_data_time = 0.0;
-	
+
 	if (list_empty){
 		accel_list = slist_create();
 		list_empty = false;
 		first_data_time = angles->time_stamp;
+		slist_add_head(accel_list, first_data_time, angles->raw_accel_x);
 	}
 
-	// slist* accel_list = slist_create();
-	printf("Time delta: %f\n",delta_time(angles->time_stamp, first_data_time) );
-	if (delta_time(angles->time_stamp, first_data_time) <= BRAKE_ACCELERATION_USECOND_THRESH ){
-		slist_add_tail(accel_list, angles->raw_accel_z);
-		// printf("Adding, size is now %i...\n", slist_get_count(accel_list));
-		// printf("Time delta: %f\n",delta_time(angles->time_stamp, first_data_time) );
+	float time_delta = delta_time(angles->time_stamp, first_data_time);
+	slist_add_tail(accel_list, angles->time_stamp, angles->raw_accel_x);
+
+	while (time_delta > BRAKE_ACCELERATION_USECOND_THRESH && accel_list->count > 0){
+		
+		first_data_time = slist_remove_head(accel_list);
+		time_delta = delta_time(angles->time_stamp, first_data_time);
+
+	}
+	float accel_avg = average_accel_list(accel_list);
+	// printf("Average: %f, Count: %i\n", average_accel_list, slist_get_count(accel_list));
+	if (accel_avg <= -BRAKE_ACCEL_THRESHOLD_VAL_G){
+		display_write(BRAKE_STRING, DISPLAY_LINE_0);
 	}
 	else{
-		printf("Count: %i\n", slist_get_count(accel_list));
+		display_write(EMPTY_STRING, DISPLAY_LINE_0);
 	}
-
 
 }
 
