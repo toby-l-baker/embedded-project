@@ -101,6 +101,9 @@ int main (void) {
     set_motor_direction(drive, FORWARD);
     set_motor_pwm(drive, PWM);
 
+    int dc = drive->duty_cycle;
+    printf("%d\n", dc);
+
     
     while(1) {
         
