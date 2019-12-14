@@ -7,7 +7,7 @@
 #define FILTER
 
 
-// Defines for directions used in set_dc_motor_direction() 
+// Defines for directions used in set_dc_motor_direction()
 #define FORWARD				1
 #define REVERSE				-1
 #define STOP				0
@@ -22,28 +22,28 @@
 // #define DRIVE_PIN_IN1 NRF_GPIO_PIN_MAP(0,4)
 // #define DRIVE_PIN_IN2 NRF_GPIO_PIN_MAP(0,28)
 
-#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,31)
-#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,30)
-#define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,29)
+#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,11)
+#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,12) // 26
+#define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,13) //2
 
 #define DRIVE_PIN_ENABLE NRF_GPIO_PIN_MAP(0,3)
 #define DRIVE_PIN_IN1 NRF_GPIO_PIN_MAP(0,28)
 #define DRIVE_PIN_IN2 NRF_GPIO_PIN_MAP(0,4)
 
 // Pins used for servo motor turning the front fork
-#define SERVO_PIN NRF_GPIO_PIN_MAP(0,27)
+#define SERVO_PIN NRF_GPIO_PIN_MAP(0,29)
 
 // Timer used for both dc motors and servo motor
 #define DC_MOTOR_TIMER			1
-#define DC_MOTOR_FREQ			5000L
-#define FlYWHEEL_MOTOR_CHANNEL	0
-#define DRIVE_MOTOR_CHANNEL		1
+#define DC_MOTOR_FREQ			1000L
+#define FlYWHEEL_MOTOR_CHANNEL	1
+#define DRIVE_MOTOR_CHANNEL		0
 
 #define SERVO_MOTOR_TIMER		1
 #define SERVO_MOTOR_CHANNEL		0
 #define SERVO_MOTOR_FREQ		20000L
 
-//Buckler 32 
+//Buckler 32
 #define X_SENSITIVITY 0.3908
 #define X_BIAS 1.4009
 
@@ -91,7 +91,7 @@
 
 #define Kp_torque_prop 	-0.2
 
-/************** This anti-windup constant prevents the integral 
+/************** This anti-windup constant prevents the integral
 from becoming to big and improves system stability ************/
 
 #define Kw 				0.95 //It should be less that 1

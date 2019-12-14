@@ -150,21 +150,22 @@ class BikeController():
 
                 if self.state == States.MANUAL:
                     '''Print 8-bit Values'''
-                    print("(X,Y): ({},{})".format(self.x, self.y))
+                    # print("(X,Y): ({},{})".format(self.x, self.y))
 
                     '''Update Angle'''
                     self.map_angle()
                     angle = self.convert_to_uint(self.angle)
-                    print("Turn Angle: {}".format(angle))
+
                     # time.sleep(0.05)
 
                     '''Update Speed'''
                     self.map_speed()
                     speed = self.convert_to_uint(self.speed)
-                    print("Drive Speed: {}".format(speed))
-                    if self.count == 6 or (speed == 0 and angle == 0):
+                    if self.count == 7 or (speed == 0 and angle == 0):
                         self.drive_char.write(bytes([speed]))
+                        print("Drive Speed: {}".format(speed))
                         self.turn_char.write(bytes([angle]))
+                        print("Turn Angle: {}".format(angle))
                         self.count = 0
                     # time.sleep(0.05)
 

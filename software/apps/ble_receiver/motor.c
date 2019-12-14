@@ -27,11 +27,11 @@ struct dc_motor * create_dc_motor(uint8_t enable, uint8_t in1, uint8_t in2, uint
         motor->in1 = in1;
         motor->in2 = in2;
         motor->pwm_channel = pwm_channel;
-  
-        
+
+
     }
     return motor;
-    
+
 }
 
 void set_dc_motor_direction(struct dc_motor * motor, int8_t direction){
