@@ -16,12 +16,13 @@ int main(void) {
   init_mpu9250();
   init_mpu9250_timer(1.953125); // period for 512 HZ 
   angles_t * angles = malloc(sizeof(angles_t));
-
+  int i = 0;
   while (1) {
     // Note: removing this delay will make responses quicker, but will result
     //  in printf's in this loop breaking JTAG
     nrf_delay_ms(1);
     update_angles(angles);
-    printf("Roll: %.4f, Pitch: %.4f, Yaw: %.4f\n", angles->theta_x, angles->theta_y, angles->theta_z);
+    if (i++ % 50 == 0)
+      printf("Roll: %.4f, Pitch: %.4f, Yaw: %.4f\n", angles->theta_x, angles->theta_y, angles->theta_z);
   }
 }

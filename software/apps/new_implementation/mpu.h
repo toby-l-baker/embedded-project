@@ -4,6 +4,7 @@
 
 #include "setup.h"
 #include "mpu9250.h"
+#include "timer_module.h"
 
 #include "MadgwickAHRS.h"
 
@@ -12,6 +13,13 @@ typedef struct angles_t {
   float theta_x;
   float theta_y;
   float theta_z;
+  float raw_accel_x;
+  float raw_accel_y;
+  float raw_accel_z;
+  float raw_imu_x;
+  float raw_imu_y;
+  float raw_imu_z;
+
   float time_stamp;
 } angles_t;
 

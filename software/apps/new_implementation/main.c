@@ -4,6 +4,7 @@
 #include "board_params.h"
 #include "timer_module.h"
 #include "mpu.h"
+#include "tail_lights.h"
 
 
 
@@ -11,14 +12,20 @@ int main(){
 
 
 	initialize_buckler();
-	// struct dc_motor * flywheel = create_dc_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, FlYWHEEL_MOTOR_CHANNEL);
- //    struct dc_motor * drive = create_dc_motor(DRIVE_PIN_ENABLE, DRIVE_PIN_IN1, DRIVE_PIN_IN2, DRIVE_MOTOR_CHANNEL);
- //    initialize_dc_motor_pwm(flywheel, drive);
+	struct dc_motor * flywheel = create_dc_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, FlYWHEEL_MOTOR_CHANNEL);
+    struct dc_motor * drive = create_dc_motor(DRIVE_PIN_ENABLE, DRIVE_PIN_IN1, DRIVE_PIN_IN2, DRIVE_MOTOR_CHANNEL);
+    initialize_dc_motor_pwm(flywheel, drive);
 
-    
+    init_timer();
     init_mpu9250();
     init_mpu9250_timer(IMU_TIMER_REFRESH_RATE); 
   
+    init_tail_lights();
+
+
+
+
+
 
     angles_t * angles = malloc(sizeof(angles_t));
     float duty_cycle = 0;
@@ -41,6 +48,7 @@ int main(){
         // start_timer();
 
         update_angles(angles);
+        update_lights(angles);
         // duty_cycle_PWM_PID(angles->theta_x, angles->time_stamp, &duty_cycle, &direction);
         // printf("Timestamp %f\n", angles->time_stamp);
         // printf("Angle %f\n", angles->theta_x );
@@ -55,8 +63,12 @@ int main(){
         // nrf_delay_ms(1);
        
         nrf_delay_ms(1);
-        if (i++ % 50 == 0)
+        if (i++ % 10 == 0){
             printf("Angle %f\n", angles->theta_x ); 
+            printf("Timestamp %f\n\n", angles->time_stamp);
+        }
+        if (i % 250 == 0)
+            blinker_toggle();
     }
     // print_timer_vals();
 

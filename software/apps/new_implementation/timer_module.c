@@ -24,6 +24,7 @@ void end_timer(){
 }
 
 float timestamp(){
+	printf("In timestamp\n");
 	return (float)(get_timer_value()) * PRESCALE_CONV;
 }
 
