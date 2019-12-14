@@ -17,7 +17,6 @@ void initialize_buckler(){
 
 
 
-
 void initialize_dc_motor_pwm(struct dc_motor* motor_1, struct dc_motor* motor_2){
 	ret_code_t error_code = NRF_SUCCESS;
 	error_code = NRF_LOG_INIT(NULL);

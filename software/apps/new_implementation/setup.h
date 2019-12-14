@@ -64,6 +64,10 @@
 #include "app_pwm.h"
 #include "buckler.h"
 #include "app_timer.h"
+#include "nrf_delay.h"
+#include "nrf_drv_spi.h"
+
+#include "display.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -72,6 +76,7 @@
 
 
 void initialize_buckler();
+
 void initialize_dc_motor_pwm(struct dc_motor* motor_1, struct dc_motor* motor_2);
 void initialize_servo_motor_pwm(struct servo_motor* motor);
 void pwm_ready_callback();
