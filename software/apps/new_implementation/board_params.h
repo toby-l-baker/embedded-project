@@ -3,7 +3,7 @@
 
 #include "setup.h"
 
-
+#define MS_DELAY		1
 
 // Comment out to remove adc filtering
 #define FILTER
@@ -92,7 +92,8 @@ from becoming to big and improves system stability ************/
 
 
 
-#define BRAKE_ACCELERATION_USECOND_THRESH 10000000.0
+#define BRAKE_ACCELERATION_USECOND_THRESH 50000.0
+#define BRAKE_ACCEL_THRESHOLD_VAL_G			0.04
 
 #define BLINKER_PERIOD	0.25
 #define MINIMUM_BLINKER_ANGLE_PER_USECOND 0.000003
