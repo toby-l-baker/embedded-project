@@ -56,6 +56,7 @@ void init_mpu9250() {
   i2c_config.frequency = NRF_TWIM_FREQ_100K;
   error_code = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
   APP_ERROR_CHECK(error_code);
+  printf("about to do mpu9250_init\n");
   mpu9250_init(&twi_mngr_instance);
   printf("IMU initialized!\n");
 }
@@ -106,6 +107,7 @@ void update_angles(angles_t * angles) {
     angles->theta_x = euler.roll;
     angles->theta_y = euler.pitch;
     angles->theta_z = euler.yaw;
+    printf("%f\n", euler.yaw);
     sample_imu = false;
   }
 }

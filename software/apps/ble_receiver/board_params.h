@@ -25,7 +25,7 @@
 
 // Timer used for both dc motors and servo motor
 #define DC_MOTOR_TIMER			1
-#define DC_MOTOR_FREQ			1000L
+#define DC_MOTOR_FREQ			5000L
 #define FlYWHEEL_MOTOR_CHANNEL	1
 #define DRIVE_MOTOR_CHANNEL		0
 
@@ -42,7 +42,15 @@
 
 #define IMU_TIMER_REFRESH_RATE 1.0
 
+/*************** Self driving ******************/
 
+#define DRIVE_RPM_PER_PWM 0.420 //The number of RPM per unit of PWM, assuming a linear relationship
+
+#define WHEEL_RADIUS_CM 4.50
+
+#define TRACKING_UPDATE_MS 100.0
+
+#define BIKE_LENGTH_M 0.30
 
 /*************** PID torque values **************/
 
@@ -54,6 +62,7 @@
 
 //Integral constant
 #define Ki_torque 		0
+
 
 /*************** PID PWM values **************/
 

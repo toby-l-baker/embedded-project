@@ -109,6 +109,8 @@ void print_state(bike_states current_state){
   }
 }
 
+float x, y, heading;
+
 int main(void) {
   // setup the board
   initialize_buckler();
@@ -144,44 +146,38 @@ int main(void) {
 	/* Initialize servo. */
 	struct servo * front = create_servo(SERVO_PIN, PWM_CHANNEL_0);
   initialize_servo_motor_pwm(front);
-	// /* Initialize 1 CH PWM, 50 Hz */
-	// app_pwm_config_t pwm_cfg = APP_PWM_DEFAULT_CONFIG_1CH(SERVO_MOTOR_FREQ, front->pin_nb);
-	// /* Switch the polarity of the first channel. */
-	// pwm_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
-	// error_code = app_pwm_init(&PWM2, &pwm_cfg, pwm_ready_callback);
-	// APP_ERROR_CHECK(error_code);
-	// app_pwm_enable(&PWM2);
 
 	struct dc_motor * drive = create_dc_motor(DRIVE_PIN_ENABLE, DRIVE_PIN_IN1, DRIVE_PIN_IN2, DRIVE_MOTOR_CHANNEL);
   struct dc_motor * flywheel = create_dc_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, FlYWHEEL_MOTOR_CHANNEL);
 	initialize_dc_motor_pwm(drive, flywheel);
 
-	float duty_cycle = 0;
   int8_t direction = STOP;
 
-  /* TAIL LIGHTS SETUP */
+  // /* TAIL LIGHTS SETUP */
   init_timer();
-  init_mpu9250();
   init_mpu9250_timer(IMU_TIMER_REFRESH_RATE);
+  init_mpu9250();
+  struct angles_t * angles = malloc(sizeof(angles_t));
 
-  init_tail_lights();
+  // init_tail_lights();
 
-  angles_t * angles = malloc(sizeof(angles_t));
+  init_tracking(drive, front, angles);
 
-  uint32_t i =0;
-
+  start_tracking();
 	// loop forever, running state machine
+  printf("Entering Main\n");
 	while (1) {
+
     char print_string[16];
     // read sensors from robot
     // Update angles and lights
     update_angles(angles);
-    update_lights(angles);
+    // update_lights(angles);
 
     switch(bike_state) {
       /*** BIKE OFF, ONLY BALANCING ***/
       case OFF: {
-        print_state(bike_state);
+        // print_state(bike_state);
         // transition logic handled by ble_evt_write
         break; // each case needs to end with break!
       }
@@ -189,25 +185,28 @@ int main(void) {
       /*** MANUAL CONTROL OF THE BIKE ***/
       case MANUAL: {
         sprintf(print_string, "Spd:%d  Ang:%d", drive_speed, turn_angle);
-        print_state(bike_state);
-
+        // print_state(bike_state);
         //set servo angle
-        printf("Turning Angle:%d\n", turn_angle);
-        set_servo_angle(front, (float) turn_angle);
+        // printf("Turning Angle:%d\n", turn_angle);
+        set_servo_angle(front, (float) 0);
         nrf_delay_ms(50);
 
-        if (drive_speed < 0){
+        if (drive_speed == 0){
         	// if speed is negative reverse
-        	set_dc_motor_direction(drive, REVERSE);
-          // set_dc_motor_direction(flywheel, REVERSE);
-        } else {
+          direction = STOP;
+        } else if (drive_speed > 0) {
         	// if speed is positive move forward
-        	set_dc_motor_direction(drive, FORWARD);
-          // set_dc_motor_direction(flywheel, FORWARD);
+        	direction = FORWARD;
+        } else {
+          direction = REVERSE;
         }
         // set the PWM to the speed TODO: Map speed to PWM
-        printf("Drive Speed PWM:%d\n", drive_speed);
-    	  set_dc_motor_pwm(drive, drive_speed);
+        // printf("Drive Speed PWM:%d\n", drive_speed);
+        // printf("Drive Speed DIR:%d\n", direction);
+        set_dc_motor_direction(drive, direction);
+    	  set_dc_motor_pwm(drive, turn_angle);
+        get_bike_state(&x, &y, &heading);
+        printf("x: %f, y %f, heading: %f\n", x, y, heading);
         //set_dc_motor_pwm(flywheel, drive_speed);
         nrf_delay_ms(50);
 
