@@ -82,6 +82,9 @@ void init_mpu9250_timer(float ms) {
 void update_angles(angles_t * angles) {
   if (sample_imu) {
   // if (true){
+    // printf("IN update angles.\n");
+    angles->time_stamp = timestamp();
+    // printf("Timesteamp: %f\n", angles->time_stamp);
     gyro = mpu9250_read_gyro();
     
     accel = mpu9250_read_accelerometer();
@@ -90,9 +93,9 @@ void update_angles(angles_t * angles) {
       angles->raw_accel_x = accel.x_axis;
       angles->raw_accel_y = accel.y_axis;
       angles->raw_accel_z = accel.z_axis;
-      angles->raw_imu_x = gyro.x_axis;
-      angles->raw_imu_y = gyro.y_axis;
-      angles->raw_imu_z = gyro.z_axis;
+      angles->raw_imu_theta_x = gyro.x_axis;
+      angles->raw_imu_theta_y = gyro.y_axis;
+      angles->raw_imu_theta_z = gyro.z_axis;
     //MadgwickAHRSupdateIMU(gyro.x_axis * TO_RAD, gyro.y_axis * TO_RAD, gyro.z_axis * TO_RAD, accel.x_axis* 9.81, accel.y_axis * 9.81, accel.z_axis * 9.81);
     MadgwickAHRSupdateIMU(gyro.x_axis * TO_RAD, gyro.y_axis * TO_RAD, gyro.z_axis * TO_RAD, accel.x_axis, accel.y_axis, accel.z_axis);
     

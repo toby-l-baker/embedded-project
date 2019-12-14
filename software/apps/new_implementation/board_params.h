@@ -3,6 +3,8 @@
 
 #include "setup.h"
 
+
+
 // Comment out to remove adc filtering
 #define FILTER
 
@@ -88,6 +90,12 @@ from becoming to big and improves system stability ************/
 
 #define Kw 				0.95 //It should be less that 1
 
+
+
+#define BRAKE_ACCELERATION_USECOND_THRESH 0.00000015
+
+#define BLINKER_PERIOD	0.25
+#define MINIMUM_BLINKER_ANGLE_PER_USECOND 0.000003
 
 
 

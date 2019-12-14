@@ -1,5 +1,6 @@
 #include "timer_module.h"
 
+#define MICROSECONDS 1000000.0
 
 static uint32_t recorded_vals[NUM_LOOPS] = {0};
 static int current_idx = 0;
@@ -9,6 +10,10 @@ static uint32_t end_val = 0;
 
 
 // nrfx_timer_t TIMER = NRFX_TIMER_INSTANCE(4);
+float delta_time(float t1, float t2){
+	// returns time difference in seconds
+	return (t1 - t2);
+}
 
 void start_timer(){
 	start_val = get_timer_value();
@@ -24,8 +29,9 @@ void end_timer(){
 }
 
 float timestamp(){
-	printf("In timestamp\n");
-	return (float)(get_timer_value()) * PRESCALE_CONV;
+	// printf("In timestamp\n");
+
+	return (float)(get_timer_value())*PRESCALE_CONV ;
 }
 
 uint32_t get_timer_value() {
@@ -34,8 +40,8 @@ uint32_t get_timer_value() {
 	return timer_value;
 }
 
-float convert(uint32_t time){
-	return time * PRESCALE_CONV;
+float convert_to_secs(uint32_t time){
+	return (float)(time * PRESCALE_CONV);
 
 }
 

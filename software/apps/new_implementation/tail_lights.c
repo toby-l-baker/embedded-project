@@ -1,14 +1,28 @@
 #include "tail_lights.h"
 
 nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
+
+#define RIGHT 1
+#define LEFT -1
+
+
 #define RIGHT_BLINKER_STRING	"              >>"
 #define LEFT_BLINKER_STRING		"<<              "
 #define BRAKE_STRING			"|||          |||"
 #define BOTH_BLINKER_STRING		"<<            >>"
 #define EMPTY_STRING			"                "
 
-bool Right_Blinker = false;
-bool Left_Blinker = false;
+#define ACCEL_POSITIVE 1
+#define ACCEL_NEGATIVE -1
+#define ACCEL_ZERO		0
+
+
+#define BLINKER_SAMPLE_FREQ 50
+
+
+
+bool Blink_State = false;
+
 
 void init_tail_lights(){
 	
@@ -30,24 +44,95 @@ void init_tail_lights(){
 	return;
 }
 
+void update_blinkers(int8_t side, float time_stamp){
+	bool change_blinker = false;
+	static int8_t prev_side = 0;
 
-void update_lights(angles_t * angles){
 
+	
+	static float Blink_Update_Time = 0.0;
+	// printf("time_stamp: %f, Blink_Update_Time: %f\n", time_stamp, Blink_Update_Time);
 
+	if (delta_time(time_stamp, Blink_Update_Time) >= BLINKER_PERIOD){
+		change_blinker = true;
+		Blink_Update_Time = time_stamp;
+		if (side != prev_side){
+			Blink_State = true;
+		}
+		else{
+			Blink_State = !Blink_State;
+		}
 
-}
-
-void blinker_toggle(){
-	static bool light = false;
-
-	if (light){
-		display_write(BOTH_BLINKER_STRING, DISPLAY_LINE_1);
+		if (Blink_State == false){
+			display_write(EMPTY_STRING, DISPLAY_LINE_1);
+		}
+		else{
+			if (side==RIGHT)
+				display_write(RIGHT_BLINKER_STRING, DISPLAY_LINE_1);
+			else if (side == LEFT)
+				display_write(LEFT_BLINKER_STRING, DISPLAY_LINE_1);
+		}
 		
 	}
+
+
+	prev_side = side;
+}
+void turn_check(float new_angle, float new_timestamp){
+	static float prev_angle = 0.0;
+	static float prev_timestamp = 0.0;
+	// printf("New: %f, Old: %f\n", new_timestamp, prev_timestamp);
+	float time_delta = delta_time(new_timestamp, prev_timestamp);
+	// printf("\tDelta: %f\n", time_delta);
+	if (new_angle/time_delta >= prev_angle/time_delta + MINIMUM_BLINKER_ANGLE_PER_USECOND){
+		// printf("Left New Angle: %f, Prev Angle: %f, Time Delta: %f\n", new_angle, prev_angle, time_delta);
+		update_blinkers(LEFT, new_timestamp);
+	}
+	else if (new_angle/time_delta <= prev_angle/time_delta - MINIMUM_BLINKER_ANGLE_PER_USECOND){
+		// printf("Left New Angle: %f, Prev Angle: %f, Time Delta: %f\n", new_angle, prev_angle, time_delta);
+		update_blinkers(RIGHT, new_timestamp);
+	}
 	else{
-		display_write(RIGHT_BLINKER_STRING, DISPLAY_LINE_1);
+		display_write(EMPTY_STRING, DISPLAY_LINE_1);
+	}
+	prev_angle = new_angle;
+	prev_timestamp = new_timestamp;
+}
+
+void update_lights(angles_t * angles){
+	static int8_t angle_ct = 0;
+	if (angle_ct++ >= BLINKER_SAMPLE_FREQ){
+		angle_ct = 0;
+		turn_check(angles->theta_z, angles->time_stamp);
+	}
+	brake_check(angles->raw_accel_y, angles->time_stamp);
+	
+	
+
+}
+
+
+
+// BRAKE_ACCELERATION_TIME_THRESH
+void brake_check(float accel, float time_stamp){
+	static bool list_empty = true;
+	static slist*  accel_list;
+	static float first_data_time = 0.0;
+	if (list_empty){
+		accel_list = slist_create();
+		list_empty = false;
+		first_data_time = time_stamp;
+	}
+	// slist* accel_list = slist_create();
+	printf("Time delta: %f\n",delta_time(time_stamp, first_data_time) );
+	if (slist_get_count(accel_list) == 0 || delta_time(first_data_time, time_stamp) <= BRAKE_ACCELERATION_USECOND_THRESH ){
+		// slist_add_tail(accel_list, accel);
+		printf("Adding, size is now %i...\n", slist_get_count(accel_list));
+	}
+	else{
+		printf("Count: %i\n", slist_get_count(accel_list));
 	}
 
 
-	light = !light;
 }
+

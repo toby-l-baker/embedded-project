@@ -4,9 +4,11 @@
 #include "setup.h"
 #include "board_params.h"
 #include "mpu.h"
+#include "slist.h"
 
 
 void init_tail_lights();
 void blinker_toggle();
+
 
 #endif

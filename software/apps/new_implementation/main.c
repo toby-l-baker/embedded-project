@@ -63,12 +63,12 @@ int main(){
         // nrf_delay_ms(1);
        
         nrf_delay_ms(1);
-        if (i++ % 10 == 0){
-            printf("Angle %f\n", angles->theta_x ); 
-            printf("Timestamp %f\n\n", angles->time_stamp);
-        }
-        if (i % 250 == 0)
-            blinker_toggle();
+        // if (i++ % 10 == 0){
+        //     printf("Angle %f\n", angles->theta_x ); 
+        //     printf("Timestamp %f\n\n", angles->time_stamp);
+        // }
+        // if (i % 250 == 0)
+        //     blinker_toggle();
     }
     // print_timer_vals();
 

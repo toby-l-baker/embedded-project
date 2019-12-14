@@ -17,4 +17,6 @@ uint32_t get_timer_value();
 
 void print_timer_vals();
 
+float delta_time(float t1, float t2);
+
 #endif 
