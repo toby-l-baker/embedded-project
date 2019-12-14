@@ -15,8 +15,11 @@ ret_code_t stop_tracking();
 
 void reset_tracking();
 
-float get_distance();
-float get_heading();
+float get_distance(); // Not implemented?
+float get_heading(); // Not implemented?
+
+float calc_steering();
+void set_dest(float x_d, float y_d);
 
 
 #endif

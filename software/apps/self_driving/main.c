@@ -81,6 +81,7 @@ int main(void) {
   start_tracking();
 
   float x,y,heading;
+  float x_dest, y_dest;
 	// loop forever, running state machine
 	while (1) {
     // TODO: complete state machine
