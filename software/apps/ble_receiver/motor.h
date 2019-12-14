@@ -4,9 +4,6 @@
 #include "setup.h"
 #include "board_params.h"
 
-
-
-
 struct dc_motor{
 	int8_t direction;
 	app_pwm_duty_t duty_cycle; // between 0 and 100
@@ -16,12 +13,6 @@ struct dc_motor{
 	uint8_t pwm_channel;
 	app_pwm_t* pwm_inst;
 };
-
-// struct servo_motor{
-// 	app_pwm_duty_t duty_cycle;
-// 	uint8_t ctrl;
-// 	app_pwm_t* pwm_inst;
-// };
 
 // struct servo_motor * create_servo_motor(uint8_t ctrl);
 struct dc_motor * create_dc_motor(uint8_t enable, uint8_t in1, uint8_t in2, uint8_t pwm_channel);
