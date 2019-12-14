@@ -78,34 +78,37 @@ void update_blinkers(int8_t side, float time_stamp){
 
 	prev_side = side;
 }
-void turn_check(float new_angle, float new_timestamp){
+void turn_check(angles_t * angles){
 	static float prev_angle = 0.0;
 	static float prev_timestamp = 0.0;
 	// printf("New: %f, Old: %f\n", new_timestamp, prev_timestamp);
-	float time_delta = delta_time(new_timestamp, prev_timestamp);
+	float time_delta = delta_time(angles->time_stamp, prev_timestamp);
 	// printf("\tDelta: %f\n", time_delta);
-	if (new_angle/time_delta >= prev_angle/time_delta + MINIMUM_BLINKER_ANGLE_PER_USECOND){
+	if (angles->theta_z/time_delta >= prev_angle/time_delta + MINIMUM_BLINKER_ANGLE_PER_USECOND){
 		// printf("Left New Angle: %f, Prev Angle: %f, Time Delta: %f\n", new_angle, prev_angle, time_delta);
-		update_blinkers(LEFT, new_timestamp);
+		update_blinkers(LEFT, angles->time_stamp);
 	}
-	else if (new_angle/time_delta <= prev_angle/time_delta - MINIMUM_BLINKER_ANGLE_PER_USECOND){
+	else if (angles->theta_z/time_delta <= prev_angle/time_delta - MINIMUM_BLINKER_ANGLE_PER_USECOND){
 		// printf("Left New Angle: %f, Prev Angle: %f, Time Delta: %f\n", new_angle, prev_angle, time_delta);
-		update_blinkers(RIGHT, new_timestamp);
+		update_blinkers(RIGHT, angles->time_stamp);
 	}
 	else{
 		display_write(EMPTY_STRING, DISPLAY_LINE_1);
 	}
-	prev_angle = new_angle;
-	prev_timestamp = new_timestamp;
+	prev_angle = angles->theta_z;
+	prev_timestamp = angles->time_stamp;
 }
 
 void update_lights(angles_t * angles){
 	static int8_t angle_ct = 0;
 	if (angle_ct++ >= BLINKER_SAMPLE_FREQ){
 		angle_ct = 0;
-		turn_check(angles->theta_z, angles->time_stamp);
+		turn_check(angles);
+		
 	}
-	brake_check(angles->raw_accel_y, angles->time_stamp);
+
+	brake_check(angles);
+	
 	
 	
 
@@ -114,20 +117,24 @@ void update_lights(angles_t * angles){
 
 
 // BRAKE_ACCELERATION_TIME_THRESH
-void brake_check(float accel, float time_stamp){
+void brake_check(angles_t * angles){
+	printf("Timestamp: %f\n", angles->time_stamp);
 	static bool list_empty = true;
 	static slist*  accel_list;
 	static float first_data_time = 0.0;
+	
 	if (list_empty){
 		accel_list = slist_create();
 		list_empty = false;
-		first_data_time = time_stamp;
+		first_data_time = angles->time_stamp;
 	}
+
 	// slist* accel_list = slist_create();
-	printf("Time delta: %f\n",delta_time(time_stamp, first_data_time) );
-	if (slist_get_count(accel_list) == 0 || delta_time(first_data_time, time_stamp) <= BRAKE_ACCELERATION_USECOND_THRESH ){
-		// slist_add_tail(accel_list, accel);
-		printf("Adding, size is now %i...\n", slist_get_count(accel_list));
+	printf("Time delta: %f\n",delta_time(angles->time_stamp, first_data_time) );
+	if (delta_time(angles->time_stamp, first_data_time) <= BRAKE_ACCELERATION_USECOND_THRESH ){
+		slist_add_tail(accel_list, angles->raw_accel_z);
+		// printf("Adding, size is now %i...\n", slist_get_count(accel_list));
+		// printf("Time delta: %f\n",delta_time(angles->time_stamp, first_data_time) );
 	}
 	else{
 		printf("Count: %i\n", slist_get_count(accel_list));

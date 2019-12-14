@@ -92,7 +92,7 @@ from becoming to big and improves system stability ************/
 
 
 
-#define BRAKE_ACCELERATION_USECOND_THRESH 0.00000015
+#define BRAKE_ACCELERATION_USECOND_THRESH 10000000.0
 
 #define BLINKER_PERIOD	0.25
 #define MINIMUM_BLINKER_ANGLE_PER_USECOND 0.000003

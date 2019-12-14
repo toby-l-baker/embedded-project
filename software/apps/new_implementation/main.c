@@ -48,6 +48,7 @@ int main(){
         // start_timer();
 
         update_angles(angles);
+        
         update_lights(angles);
         // duty_cycle_PWM_PID(angles->theta_x, angles->time_stamp, &duty_cycle, &direction);
         // printf("Timestamp %f\n", angles->time_stamp);

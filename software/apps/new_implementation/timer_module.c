@@ -29,7 +29,7 @@ void end_timer(){
 }
 
 float timestamp(){
-	// printf("In timestamp\n");
+	// printf("In timestamp: %f\n", get_timer_value());
 
 	return (float)(get_timer_value())*PRESCALE_CONV ;
 }
@@ -37,6 +37,7 @@ float timestamp(){
 uint32_t get_timer_value() {
 	NRF_TIMER4->TASKS_CAPTURE[1] |= 1;
 	uint32_t timer_value = NRF_TIMER4->CC[1];
+	// NRF_TIMER4->TASKS_CAPTURE[1] ;
 	return timer_value;
 }
 
