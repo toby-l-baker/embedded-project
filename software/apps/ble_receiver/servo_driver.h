@@ -4,23 +4,8 @@
 #include "buckler.h"
 #include "app_pwm.h"
 
-#define FORWARD				1
-#define BACKWARD			-1
-#define STOP				0
-
 #define PWM_CHANNEL_0 		0
 #define PWM_CHANNEL_1		1
-
-#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,19)
-#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,20)
-#define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,22)
-
-#define DRIVE_PIN_ENABLE NRF_GPIO_PIN_MAP(0,23)
-#define DRIVE_PIN_IN1 NRF_GPIO_PIN_MAP(0,24)
-#define DRIVE_PIN_IN2 NRF_GPIO_PIN_MAP(0,25)
-
-#define ENCODER_CH_A NRF_GPIO_PIN_MAP(0,20) //using BUCKLER_SENSORS_SDA
-#define ENCODER_CH_B NRF_GPIO_PIN_MAP(0,7) //using BUCKLER_IMU_INTERUPT
 
 
 
