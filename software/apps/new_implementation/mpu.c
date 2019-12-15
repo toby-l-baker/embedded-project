@@ -73,10 +73,10 @@ void init_mpu9250_timer(float ms) {
   APP_ERROR_CHECK(error_code);
   uint32_t ticks = APP_TIMER_TICKS(ms); // period for 512Hz sampling//
   // uint32_t ticks = 5000;
-  printf("Timer Initialized!\n Num Ticks: %d\n", ticks);
+
   error_code = app_timer_start(IMU_TIMER, ticks, NULL);
   APP_ERROR_CHECK(error_code);
-  printf("Timer Started!\n");
+  printf("\tMPU Timer Initialized, \tNum Ticks: %d\n", ticks);
 }
 
 void update_angles(angles_t * angles) {

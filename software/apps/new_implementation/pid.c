@@ -1,5 +1,7 @@
 #include "pid.h"
 
+
+
 float map_duty_cycle(float dc){
 	return dc+MIN_DUTY_CYCLE*atan(2*dc);
 	if (dc >= 0.0)
@@ -84,6 +86,7 @@ void duty_cycle_torque_PID(float theta, float time_stamp, float* duty_cycle, int
 	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
 	float signed_torque = signed_torque_PID(theta, time_stamp);
 	float signed_duty_cycle = signed_current_dc + signed_torque;
+	signed_duty_cycle += signed_current_dc * Kpwm_torque;
 
 	//CLip to to -100 / 100
 	if (signed_duty_cycle > 100.0f)  {signed_duty_cycle = 100.0f;}
@@ -176,7 +179,9 @@ float signed_PWM_PID(float theta, float time_stamp) {
 void duty_cycle_PWM_PID(float theta, float time_stamp, float* duty_cycle, int8_t* direction) {
 
 	//Udpate unbounded duty cycle
+	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
 	float signed_duty_cycle = signed_PWM_PID(theta, time_stamp);
+	signed_duty_cycle += signed_current_dc * Kpwm_PWM;
 
 	//CLip to to -100 / 100
 	if (signed_duty_cycle > 100.0f)  {signed_duty_cycle = 100.0f;}

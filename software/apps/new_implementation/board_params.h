@@ -3,41 +3,42 @@
 
 #include "setup.h"
 
+// Delay introduced in the loop
 #define MS_DELAY		1
-
-// Comment out to remove adc filtering
-#define FILTER
-
 
 // Defines for directions used in set_dc_motor_direction() 
 #define FORWARD				1
 #define REVERSE				-1
 #define STOP				0
 
-// Pins used forthe dc motor driving the flywheel
-#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,12)
-#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,23)
-#define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,2)
+// Timers
+#define DC_MOTOR_TIMER			3
+#define SERVO_MOTOR_TIMER		2
+#define TIMER_MODULE_TIMER 		4
+ 
 
-//Pins used for the dc motor driving the drive wheel
+
+
+// Pins used to drive the motors
+#define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,11)
+#define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,12) 
+#define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,13) 
+
 #define DRIVE_PIN_ENABLE NRF_GPIO_PIN_MAP(0,3)
-#define DRIVE_PIN_IN1 NRF_GPIO_PIN_MAP(0,4)
-#define DRIVE_PIN_IN2 NRF_GPIO_PIN_MAP(0,28)
+#define DRIVE_PIN_IN1 NRF_GPIO_PIN_MAP(0,28)
+#define DRIVE_PIN_IN2 NRF_GPIO_PIN_MAP(0,4)
 
-// Pins used for servo motor turning the front fork
-#define SERVO_PIN NRF_GPIO_PIN_MAP(0,20)
+#define SERVO_PIN NRF_GPIO_PIN_MAP(0,27)
 
-// Timer used for both dc motors and servo motor
-#define DC_MOTOR_TIMER			1
-#define DC_MOTOR_FREQ			5000L
+#define DC_MOTOR_FREQ			1000L
 #define FlYWHEEL_MOTOR_CHANNEL	0
 #define DRIVE_MOTOR_CHANNEL		1
 
-#define SERVO_MOTOR_TIMER		1
+
 #define SERVO_MOTOR_CHANNEL		0
 #define SERVO_MOTOR_FREQ		20000L
 
-//Buckler 32 
+// Calibration for Buckler 32 
 #define X_SENSITIVITY 0.3908
 #define X_BIAS 1.4009
 
@@ -57,29 +58,42 @@
 
 #define IMU_TIMER_REFRESH_RATE 1.953125
 
+/*************** Self driving ******************/
 
+#define DRIVE_RPM_PER_PWM 0.420 //The number of RPM per unit of PWM, assuming a linear relationship
+
+#define WHEEL_RADIUS_CM 4.50
+
+#define TRACKING_UPDATE_MS 100.0
+
+#define BIKE_LENGTH_M 0.30
 
 /*************** PID torque values **************/
 
 //Proportional control
-#define Kp_torque 		-.3
+#define Kp_torque 		-0.3
 
 //Derivative constant
 #define Kd_torque 		-0
 
 //Integral constant
-#define Ki_torque 		0
+#define Ki_torque 		8.5
+
+//
+#define Kpwm_torque		-0.3
 
 /*************** PID PWM values **************/
 
 //Proportional control
-#define Kp_PWM 			-30.0
+#define Kp_PWM 			-24.58
 
 //Derivative constant
-#define Kd_PWM 			-0.0
+#define Kd_PWM 			-1.0
 
 //Integral constant
-#define Ki_PWM 			0.0
+#define Ki_PWM 			100 //397.0
+
+#define Kpwm_PWM		-10.1
 
 /************** Proportionnal torque value **************/
 
@@ -92,6 +106,13 @@ from becoming to big and improves system stability ************/
 
 
 
+
+
+#define MIN_DUTY_CYCLE 0
+#define MAX_DUTY_CYCLE 100
+
+
+
 #define BRAKE_ACCELERATION_USECOND_THRESH 50000.0
 #define BRAKE_ACCEL_THRESHOLD_VAL_G			0.04
 
@@ -100,9 +121,6 @@ from becoming to big and improves system stability ************/
 
 
 
-
-#define MIN_DUTY_CYCLE 10
-#define MAX_DUTY_CYCLE 100
 
 
 #endif

@@ -54,7 +54,7 @@ void print_timer_vals(){
 
 }
 
-void init_timer() {
+void init_timer_module() {
 
 	NRF_TIMER4->BITMODE = 3;
 	NRF_TIMER4->PRESCALER = 0; // Read at 16 Mhz / 16 = 1MHz
@@ -62,4 +62,5 @@ void init_timer() {
 	NRF_TIMER4->TASKS_START = 1; //Set TASKS_START
 	NRF_TIMER4->INTENSET = 1<<16; //Enable interrupts for CC[0]
 	// NVIC_EnableIRQ(TIMER4_IRQn);
+	printf("Timer module initialized using TIMER%i.\n", TIMER_MODULE_TIMER);
 }

@@ -40,6 +40,7 @@ void init_tail_lights(){
 	ret_code_t error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
 	APP_ERROR_CHECK(error_code);
 	display_init(&spi_instance);
+	printf("Tail Light Display initialized.\n");
 
 	return;
 }
