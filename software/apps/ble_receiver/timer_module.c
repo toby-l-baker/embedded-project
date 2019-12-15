@@ -31,7 +31,7 @@ void end_timer(){
 float timestamp(){
 	// printf("In timestamp: %f\n", get_timer_value());
 
-	return (float)(get_timer_value())*PRESCALE_CONV ;
+	return (float)(get_timer_value()) ;
 }
 
 uint32_t get_timer_value() {
@@ -55,6 +55,7 @@ void print_timer_vals(){
 void init_timer_module() {
 
 	NRF_TIMER4->BITMODE = 3;
+	NRF_TIMER4->MODE = 0;
 	NRF_TIMER4->PRESCALER = 0; // Read at 16 Mhz / 16 = 1MHz
 	NRF_TIMER4->TASKS_CLEAR = 1; //Set TASKS_CLEAR
 	NRF_TIMER4->TASKS_START = 1; //Set TASKS_START

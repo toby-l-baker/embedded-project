@@ -166,6 +166,7 @@ int main(void) {
   printf("Entering Main\n");
   bool first_time = false;
   float first_timestamp = 0;
+  int i = 0;
 	while (1) {
 
     char print_string[16];
@@ -177,7 +178,9 @@ int main(void) {
       first_time = true;
     }
     // printf("YAW: %f\n", (angles->theta_z) - (angles->time_stamp - first_timestamp) * 0.33);
-    printf("TIMESTAMP: %f\n", angles->time_stamp);
+    if (i++ % 100 == 0) {
+      printf("TIMESTAMP: %f\n", angles->time_stamp);
+    }
     // update_lights(angles);
 
     switch(bike_state) {
