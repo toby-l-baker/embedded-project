@@ -6,6 +6,7 @@ struct dc_motor* drive;
 struct servo* front;
 struct angles_t*  angle;
 
+bool nav_complete = false;
 
 float x = 0.0;
 float y = 0.0;
@@ -104,9 +105,15 @@ void get_bike_state(float* x_coo, float* y_coo, float* heading_coo) {
 	return;
 }
 
-void set_dest(float x_d, float y_d){
-	x_dest = x_d;
-	y_dest = y_d;
+void set_dest(float path_len, float path_angle){
+	float path_angle_deg = path_angle * 360 / 255;
+	float path_angle_rad = path_angle_deg * 180 / 3.14159;
+	float x_d = path_len / 100 * sin(path_angle_rad);
+	float y_d = path_len / 100 * cos(path_angle_rad);
+	// Get the x_dest and y_dest in terms of the global coordinate frame
+	x_dest = x_d * cos(heading * 180 / 3.14159) - y_d * sin(heading * 180 / 3.14159) + x;
+	y_dest = x_d * sin(heading * 180 / 3.14159) + y_d * cos(heading * 180 / 3.14159) + y;
+	printf("X_GOAL: %f, Y_GOAL: %f\n", x_dest, y_dest);
 }
 
 // void get_dest(){
@@ -114,7 +121,6 @@ void set_dest(float x_d, float y_d){
 // }
 
 float calc_alpha() {
-
 	float angle2dest = atan2f((x-x_dest),(y-y_dest));
 	float alpha = heading - angle2dest;
 	return alpha;
@@ -130,8 +136,14 @@ float calc_steering() {
 	if (steering > 45.0) {
 		steering = 45.0;
 	}
+
 	else if (steering < -45.0) {
 		steering = -45.0;
 	}
+
+	if ((abs(x_dest - x) < 0.2) && (abs(y_dest - y) < 0.2)) {
+		nav_complete = true;
+	}
+
 	return steering;
 }

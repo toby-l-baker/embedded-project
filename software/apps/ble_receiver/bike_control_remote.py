@@ -18,7 +18,8 @@ CHAR_UUIDS = ["4607eda1-f65e-4d59-a9ff-84420d87a4ca",
             "4607eda2-f65e-4d59-a9ff-84420d87a4ca",
             "4607eda3-f65e-4d59-a9ff-84420d87a4ca",
             "4607eda4-f65e-4d59-a9ff-84420d87a4ca",
-            "4607eda5-f65e-4d59-a9ff-84420d87a4ca"]
+            "4607eda5-f65e-4d59-a9ff-84420d87a4ca",
+            "4607eda6-f65e-4d59-a9ff-84420d87a4ca"]
 
 class States(Enum):
     IDLE=0
@@ -38,11 +39,12 @@ class BikeController():
         self.power_char = self.sv.getCharacteristics(CHAR_UUIDS[1])[0]
         self.drive_char = self.sv.getCharacteristics(CHAR_UUIDS[2])[0]
         self.turn_char = self.sv.getCharacteristics(CHAR_UUIDS[3])[0]
-        self.path_char = self.sv.getCharacteristics(CHAR_UUIDS[4])[0]
+        self.path_len_char = self.sv.getCharacteristics(CHAR_UUIDS[4])[0]
+        self.path_angle_char = self.sv.getCharacteristics(CHAR_UUIDS[5])[0]
 
         print("connected")
         # Setup the gamepad and print its information
-        self.gamepad = InputDevice('/dev/input/event5')
+        self.gamepad = InputDevice('/dev/input/event7')
         print(self.gamepad)
         self.count = 0
 
@@ -57,7 +59,7 @@ class BikeController():
         self.y = 0
 
         # integral time constant for auonomous path plan
-        self.int_const = 0.00001
+        self.int_const = 0.003 * 100 # A somewhat magic number that gives the resolution we want
         self.path_length = 0
         self.path_angles = []
 
@@ -66,6 +68,7 @@ class BikeController():
     def __exit__(self, exc_type, exc_value, traceback):
         self.bike.disconnect()
 
+    '''Maps the speed of the bike to a range of turn_map["new_min"] to turn_map["new_max"]'''
     def map_angle(self):
         if self.y < 0:
             angle = (np.arctan2(self.y, self.x) * 180 / np.pi + 90)
@@ -75,6 +78,7 @@ class BikeController():
         val = np.interp(angle, (self.turn_map["min"], self.turn_map["max"]), (self.turn_map["new_min"], self.turn_map["new_max"]))
         self.angle = int(val)
 
+    '''Maps the speed of the bike to a range of drive_map["new_min"] to drive_map["new_max"]'''
     def map_speed(self):
         if self.y > 0:
             speed = -np.maximum(abs(self.x), abs(self.y))
@@ -83,12 +87,23 @@ class BikeController():
         val = np.interp(speed, (self.drive_map["min"], self.drive_map["max"]), (self.drive_map["new_min"], self.drive_map["new_max"]))
         self.speed = int(val)
 
+    '''Maps an 8 bit signed integer to a uint for sending over BLE'''
     def convert_to_uint(self, num):
         if num < 0:
             return np.uint8(256 + num)
         else:
             return np.uint8(num)
 
+    '''Maps a -180 to 180 degree angle to the range 0 to 255 for BLE - converted to int on buckler'''
+    def map_180_to_uint(self, list):
+        average = np.average(list)
+        val = np.interp(average, (-180, 180), (-128, 127))
+        if num < 0:
+            return np.uint8(256 + val)
+        else:
+            return np.uint8(val)
+
+    '''Maps the path angle to a range of -180 to 180 degrees, where 0 is straight ahead'''
     def map_angle_path(self):
         ang = np.arctan2(-self.x, self.y)*180/np.pi - 180
         if ang < -180:
@@ -131,10 +146,11 @@ class BikeController():
                 '''Send path to follow'''
                 if event.code == self.buttons["UP"] and event.value == 1:
                     if self.state == States.AUTONOMOUS:
-                        path = [self.path_length, np.average(self.path_angles)]
-                        print("(r, theta): ({},{})".format(path[0], path[1]))
-                        self.path_char.write(bytes([path]))
-                        time.sleep(0.1)
+                        '''Print desired path and send to buckler'''
+                        print("(r (cm), theta (deg)): ({},{})".format(self.path_length, self.path_angle * 360/255))
+                        self.path_len_char.write(bytes([self.path_length]))
+                        self.path_angle_char.write(bytes([self.path_angle]))
+                        '''Reset path lengths and angles'''
                         self.path_length = 0
                         self.path_angles = []
 
@@ -156,8 +172,6 @@ class BikeController():
                     self.map_angle()
                     angle = self.convert_to_uint(self.angle)
 
-                    # time.sleep(0.05)
-
                     '''Update Speed'''
                     self.map_speed()
                     speed = self.convert_to_uint(self.speed)
@@ -167,15 +181,20 @@ class BikeController():
                         self.turn_char.write(bytes([angle]))
                         print("Turn Angle: {}".format(angle))
                         self.count = 0
-                    # time.sleep(0.05)
 
                     self.count += 1
 
                 if self.state == States.AUTONOMOUS:
                     self.path_angles.append(self.map_angle_path())
                     self.map_speed()
-                    self.path_length += self.int_const * self.speed
-                    print("Current Path Plan (r, theta): ({},{})", self.path_length, np.average(self.path_angles))
+                    self.path_length += self.int_const * self.speed # self.speed updated in self.map_speed()
+                    '''Clip path length to be in range of 0 to 255 cm '''
+                    if self.path_length <= 0:
+                        self.path_length = 0
+                    elif self.path_length >= 255:
+                        self.path_length = 255
+                    self.path_angle = self.map_180_to_uint(self.path_angles)
+                    print("Current Path Plan (r, theta_int, theta_float): ({},{}, {})".format(self.path_length, self.path_angle * (360/255), np.average(self.path_angles)))
 
 with BikeController(addr) as bike:
     print('Use Start, A, B and Joystick to control the bike')

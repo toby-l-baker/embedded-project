@@ -60,8 +60,14 @@ int8_t drive_speed=0;
 static simple_ble_char_t turn_char = {.uuid16 = 0xeda4};
 int8_t turn_angle=0;
 
-static simple_ble_char_t path_char = {.uuid16 = 0xeda5};
-float* path_plan;
+static simple_ble_char_t path_len_char = {.uuid16 = 0xeda5};
+int8_t path_len; // will be range of 0 to 255 cm
+
+static simple_ble_char_t path_angle_char = {.uuid16 = 0xeda6};
+int8_t path_angle; //will be 0 to 255, need to do 360/255 * path_angle to get degrees
+
+bool path_len_received = false;
+bool path_angle_received = false;
 
 simple_ble_app_t* simple_ble_app;
 
@@ -84,8 +90,12 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
       } else {
         bike_state = OFF;
       }
-    } else if (simple_ble_is_char_event(p_ble_evt, &turn_char)) {
-      auto_state = DRIVE;
+    } else if (simple_ble_is_char_event(p_ble_evt, &path_len_char)) {
+      nav_complete = false;
+      path_len_received = true;
+    } else if (simple_ble_is_char_event(p_ble_evt, &path_len_char)) {
+      nav_complete = false;
+      path_angle_received = true;
     }
 }
 
@@ -138,8 +148,12 @@ int main(void) {
 	  &bike_srv, &turn_char);
 
 	simple_ble_add_characteristic(1, 1, 0, 0,
-	  sizeof(*path_plan), (float*)path_plan,
-	  &bike_srv, &path_char);
+	  sizeof(path_len), (uint8_t*)path_len,
+	  &bike_srv, &path_len_char);
+
+  simple_ble_add_characteristic(1, 1, 0, 0,
+	  sizeof(path_angle), (uint8_t*)path_angle,
+	  &bike_srv, &path_angle_char);
 
 	/* Initialize servo. */
 	struct servo * front = create_servo(SERVO_PIN, PWM_CHANNEL_0);
@@ -167,7 +181,7 @@ int main(void) {
   bool first_time = false;
   float first_timestamp = 0;
   int i = 0;
-  bike_state = AUTONOMOUS;
+  
 	while (1) {
 
     char print_string[16];
@@ -221,28 +235,27 @@ int main(void) {
 
       /*** AUTOOMOUS CONTROL OF THE BIKE ***/
       case AUTONOMOUS: {
-        print_state(bike_state);
-        switch(auto_state){
-          /*** GET THE PATH FOR THE BIKE TO AUTONOMOUSLY FOLLOW ***/
-          float actual_path_plan;
-          case GET_PATH: {
-            set_dest(1, 0);
-            float angle = calc_steering();
-            printf("%f\n", angle);
-            //Integrate the joystick to get a vector
-            printf("Getting path\n");
-            // actual_path_plan = (float)  path_plan;
-            // spr?intf(print_string, "r:%f  theta:%f", path_plan[0], path_plan[1]);
-            break;
+        // print_state(bike_state);
+        /*** Wait until our path is non-zero then follow ***/
+        if ((path_angle_received == false) || (path_len_received == false) || (nav_complete == true)) {
+          direction = STOP;
+          drive_speed = 0;
+          turn_angle = 0;
+        } else {
+          if ((path_angle_received) && (path_len_received)) {
+            set_dest(path_len, path_angle);
+            path_angle_received = false;
+            path_len_received = false;
           }
-          /*** FOLLOW THE SET PATH ***/
-          case DRIVE: {
-            //Get to our goal!!
-            printf("Navigating to path\n");
-            //Keep navigating to our goal pos
-            break;
-          }
+          direction = FORWARD;
+          drive_speed = 100;
+          turn_angle = (int8_t) calc_steering();
+          printf("%f\n", turn_angle);
+          printf("x: %f, y %f, heading: %f\n", x, y, heading);
         }
+        set_dc_motor_direction(drive, direction);
+        set_dc_motor_pwm(drive, drive_speed); //always drive at a constant speed in auto mode
+        set_servo_angle(front, turn_angle);
         break;
       }
     }
