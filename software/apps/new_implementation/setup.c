@@ -6,7 +6,7 @@ APP_PWM_INSTANCE(DC_MOTOR_PWM, DC_MOTOR_TIMER);
 APP_PWM_INSTANCE(SERV_MOTOR_PWM, SERVO_MOTOR_TIMER);
 
 void print_angles(angles_t* angles, float duty_cycle){
-    printf("X angle: %f\nY angle: %f\nZ angle%f\nTimeStamp: %f\nDuty Cycle: %f\n\n", 
+    printf("X angle: %f\nY angle: %f\nZ angle: %f\nTimeStamp: %f\nDuty Cycle: %f\n\n", 
         angles->theta_x, angles->theta_y, angles->theta_z, angles->time_stamp, duty_cycle);
 }
 

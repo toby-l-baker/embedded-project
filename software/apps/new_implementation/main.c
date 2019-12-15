@@ -41,7 +41,7 @@ int main(){
 
   
 
-    int i = 0;
+    int loop_count = 0;
 
 
     angles_t * angles = malloc(sizeof(angles_t));
@@ -61,10 +61,13 @@ int main(){
         // duty_cycle_torque_proportional
         // duty_cycle_torque_PID(angles->theta_x, angles->time_stamp, &duty_cycle, &direction);
      
-        if (i++ %100 == 0)
-            print_angles(angles, duty_cycle);
-            // printf("%i\n", bike_state);
-        // update_lights(angles);
+        if (loop_count++ %100 == 0){
+            
+            // printf("State: %i\n", bike_state);
+            // printf("X acceleration: %f\n", angles->raw_accel_x);
+            // print_angles(angles, duty_cycle);
+        }
+        update_lights(angles);
 
        
 

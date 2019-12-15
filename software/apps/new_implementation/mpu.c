@@ -90,7 +90,7 @@ void update_angles(angles_t * angles) {
     
     accel = mpu9250_read_accelerometer();
 
-
+      
       angles->raw_accel_x = accel.x_axis;
       angles->raw_accel_y = accel.y_axis;
       angles->raw_accel_z = accel.z_axis;
