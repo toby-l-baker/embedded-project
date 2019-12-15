@@ -1,6 +1,5 @@
 #include "setup.h"
-#include "motor.h"
-#include "board_params.h"
+
 
 
 APP_PWM_INSTANCE(DC_MOTOR_PWM, DC_MOTOR_TIMER); 
