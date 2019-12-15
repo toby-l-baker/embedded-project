@@ -46,7 +46,7 @@ static void tracking_handler(void * p_context) {
 	//Update old timestamp
 	last_update_timestamp = current_timestamp;
 	//Update old front heading
-	heading = angle->theta_z;// front->duty_cycle;
+	heading = angle->theta_z;//front->duty_cycle;
 
     return;
 }
@@ -114,7 +114,6 @@ void set_dest(float x_d, float y_d){
 // }
 
 float calc_alpha() {
-
 	float angle2dest = atan2f((x-x_dest),(y-y_dest));
 	float alpha = heading - angle2dest;
 	return alpha;
@@ -126,7 +125,8 @@ float calc_steering() {
 	float L = 1; // Bike Length
 
 	float alpha = calc_alpha();
-	float steering = atanf(2*L*sin(alpha)/(k*vx));
+	float steering = atanf(2*L*sin(alpha)/(k*vx)) * (180.0/3.14) ;
+
 	if (steering > 45.0) {
 		steering = 45.0;
 	}

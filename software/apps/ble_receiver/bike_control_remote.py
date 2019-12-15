@@ -42,7 +42,7 @@ class BikeController():
 
         print("connected")
         # Setup the gamepad and print its information
-        self.gamepad = InputDevice('/dev/input/event5')
+        self.gamepad = InputDevice('/dev/input/event7')
         print(self.gamepad)
         self.count = 0
 
