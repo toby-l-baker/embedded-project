@@ -26,6 +26,7 @@
 #include "states.h"
 #include "servo_driver.h"
 #include "motor.h"
+#include "mpu.h"
 
 // I2C manager
 // NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
@@ -166,6 +167,7 @@ int main(void) {
   printf("Entering Main\n");
   bool first_time = false;
   float first_timestamp = 0;
+  int i = 0;
 	while (1) {
 
     char print_string[16];
@@ -173,13 +175,20 @@ int main(void) {
     // Update angles and lights
     update_angles(angles);
     if (first_time == false) {
-      first_timestamp = angles->time_stamp;
+      first_timestamp = angles->time_stamp * 0.000001;
       first_time = true;
     }
-    // printf("YAW: %f\n", (angles->theta_z) - (angles->time_stamp - first_timestamp) * 0.33);
-    printf("TIMESTAMP: %f\n", angles->time_stamp);
+    float hold;
+    if (update_z) {
+      hold = (angles->theta_z) - (angles->time_stamp * 0.000001 - first_timestamp) * 0.33;
+      update_z = false;
+    }
+    printf("angle_z: %f\n", hold);
+    // if (i++ % 100 == 0) {
+    //   printf("TIMESTAMP: %f\n", angles->time_stamp);
+    // }
     // update_lights(angles);
-
+    set_dest(0, 5);
     switch(bike_state) {
       /*** BIKE OFF, ONLY BALANCING ***/
       case OFF: {
@@ -193,9 +202,7 @@ int main(void) {
         sprintf(print_string, "Spd:%d  Ang:%d", drive_speed, turn_angle);
         // print_state(bike_state);
         //set servo angle
-        // printf("Turning Angle:%d\n", turn_angle);
-        set_servo_angle(front, (float) 0);
-        nrf_delay_ms(50);
+        set_servo_angle(front, (float) turn_angle);
 
         if (drive_speed == 0){
         	// if speed is negative reverse
@@ -210,12 +217,10 @@ int main(void) {
         // printf("Drive Speed PWM:%d\n", drive_speed);
         // printf("Drive Speed DIR:%d\n", direction);
         set_dc_motor_direction(drive, direction);
-    	  set_dc_motor_pwm(drive, turn_angle);
+    	  set_dc_motor_pwm(drive, drive_speed);
         get_bike_state(&x, &y, &heading);
         printf("x: %f, y %f, heading: %f\n", x, y, heading);
         //set_dc_motor_pwm(flywheel, drive_speed);
-        nrf_delay_ms(50);
-
         break;
       }
 
@@ -226,10 +231,15 @@ int main(void) {
           /*** GET THE PATH FOR THE BIKE TO AUTONOMOUSLY FOLLOW ***/
           float actual_path_plan;
           case GET_PATH: {
+            
+            float angle = calc_steering();
+            printf("Steering: %f\n", angle);
             //Integrate the joystick to get a vector
-            printf("Getting path\n");
+            get_bike_state(&x, &y, &heading);
+            printf("x: %f, y %f, heading: %f\n", x, y, heading);
+            // printf("Getting path\n");
             // actual_path_plan = (float)  path_plan;
-            sprintf(print_string, "r:%f  theta:%f", path_plan[0], path_plan[1]);
+            // spr?intf(print_string, "r:%f  theta:%f", path_plan[0], path_plan[1]);
             break;
           }
           /*** FOLLOW THE SET PATH ***/

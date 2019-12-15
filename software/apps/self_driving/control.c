@@ -123,7 +123,7 @@ float calc_steering() {
 	float L = 1; // Bike Length
 
 	float alpha = calc_alpha();
-	float steering = atan(2*L*sin(alpha)/(k*vx)); 
+	float steering = atanf(2*L*sin(alpha)/(k*vx)); 
 	if (steering > 45.0) {
 		steering = 45.0;
 	}

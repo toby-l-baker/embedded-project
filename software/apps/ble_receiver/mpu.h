@@ -9,6 +9,8 @@
 
 #include "MadgwickAHRS.h"
 
+extern bool update_z;
+
 //Contains accelerometer readings in DEGREES
 typedef struct angles_t {
   float theta_x;

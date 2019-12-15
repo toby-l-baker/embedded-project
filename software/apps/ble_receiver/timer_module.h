@@ -20,4 +20,4 @@ void print_timer_vals();
 
 float delta_time(float t1, float t2);
 
-#endif 
+#endif
