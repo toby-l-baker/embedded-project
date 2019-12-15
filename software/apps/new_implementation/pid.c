@@ -84,7 +84,7 @@ void duty_cycle_torque_PID(float theta, float time_stamp, float* duty_cycle, int
 	
 	//Udpate unbounded duty cycle
 	float signed_current_dc = ((float)*direction) * ((float)*duty_cycle);
-	float signed_torque = signed_torque_PID(theta, time_stamp);
+	float signed_torque = signed_torque_PID(theta, time_stamp/1000000.0);
 	float signed_duty_cycle = signed_current_dc + signed_torque;
 	signed_duty_cycle += signed_current_dc * Kpwm_torque;
 

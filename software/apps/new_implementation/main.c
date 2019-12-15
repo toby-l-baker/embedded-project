@@ -6,6 +6,7 @@
 #include "mpu.h"
 #include "tail_lights.h"
 
+#define BALANCING
 
 
 int main(){
@@ -28,13 +29,14 @@ int main(){
 
     init_tail_lights();
 
+  
 
-
-
+    int i = 0;
 
 
     angles_t * angles = malloc(sizeof(angles_t));
-    float duty_cycle = 0;
+    float duty_cycle = 0.0;
+
     int8_t direction = STOP;
 
     while(true){
@@ -42,13 +44,21 @@ int main(){
      
 
         update_angles(angles);
-        print_angles(angles, duty_cycle);
+
+
         
+        // duty_cycle_PWM_PID(angles->theta_x, angles->)
+        // duty_cycle_torque_proportional
+        duty_cycle_torque_PID(angles->theta_x, angles->time_stamp, &duty_cycle, &direction);
+     
+        if (i++ %10 == 0)
+            print_angles(angles, duty_cycle);
         update_lights(angles);
 
        
+
+
         nrf_delay_ms(MS_DELAY);
-      
     }
    
 	return 0;
