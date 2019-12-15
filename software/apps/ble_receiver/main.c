@@ -195,7 +195,7 @@ int main(void) {
     }
     float hold;
     if (update_z) {
-      hold = (angles->theta_z) - (angles->time_stamp * 0.000001 - first_timestamp) * 0.33;
+      angles->heading = (angles->heading) - (angles->time_stamp * 0.000001 - first_timestamp) * 0.33;
       update_z = false;
     }
     printf("angle_z: %f\n", hold);

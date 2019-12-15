@@ -22,7 +22,7 @@ typedef struct angles_t {
   float raw_imu_theta_x;
   float raw_imu_theta_y;
   float raw_imu_theta_z;
-
+  float heading;
   float time_stamp;
 } angles_t;
 

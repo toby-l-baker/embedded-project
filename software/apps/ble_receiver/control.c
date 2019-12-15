@@ -47,7 +47,7 @@ static void tracking_handler(void * p_context) {
 	//Update old timestamp
 	last_update_timestamp = current_timestamp;
 	//Update old front heading
-	heading = angle->theta_z;//front->duty_cycle;
+	heading = angle->heading;//front->duty_cycle;
 
     return;
 }
