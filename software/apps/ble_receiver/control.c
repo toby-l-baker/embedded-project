@@ -53,7 +53,7 @@ ret_code_t init_tracking(struct dc_motor* drive_motor, struct servo* front_servo
 	front = front_servo;
 	angle = angles;
 	//Get a repeating timer running
-	init_timer();
+	init_timer_module();
 	ret_code_t err_code;
 
 	// ret_code_t err_code = nrf_drv_clock_init();

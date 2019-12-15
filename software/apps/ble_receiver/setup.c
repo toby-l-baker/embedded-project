@@ -2,9 +2,9 @@
 #include "motor.h"
 #include "board_params.h"
 
-APP_PWM_INSTANCE(PWM0,4);
+APP_PWM_INSTANCE(PWM0,3);
 /* Create PWM instance for Servo. */
-APP_PWM_INSTANCE(PWM2, 3);
+APP_PWM_INSTANCE(PWM2, 2);
 
 void initialize_buckler(){
 	ret_code_t error_code = NRF_SUCCESS;

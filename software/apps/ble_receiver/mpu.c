@@ -1,6 +1,7 @@
 #include "mpu.h"
 
 #define TO_RAD 3.1415926535 / 180
+#define GYRO_SCALING_Z 0.07
 #define TO_DEG 180 / 3.1415926535
 
 mpu9250_measurement_t accel;
@@ -61,12 +62,14 @@ void init_mpu9250() {
   printf("IMU initialized!\n");
 }
 
-void init_mpu9250_timer(float ms) {
+void init_mpu9250_timer(float ms, bool ble) {
   ret_code_t error_code = NRF_SUCCESS;
   // lfclk_request();
   //Initlize timer library
-  error_code = app_timer_init();
-  APP_ERROR_CHECK(error_code);
+  if (ble == false) {
+    error_code = app_timer_init();
+  }
+  // APP_ERROR_CHECK(error_code);
   // Create timer instance
   APP_TIMER_DEF(IMU_TIMER);
   error_code = app_timer_create(&IMU_TIMER, APP_TIMER_MODE_REPEATED, imu_callback);
@@ -83,7 +86,7 @@ void update_angles(angles_t * angles) {
   if (sample_imu) {
   // if (true){
     // printf("IN update angles.\n");
-    angles->time_stamp = timestamp();
+
 
     gyro = mpu9250_read_gyro();
 
@@ -97,7 +100,7 @@ void update_angles(angles_t * angles) {
       angles->raw_imu_theta_y = gyro.y_axis;
       angles->raw_imu_theta_z = gyro.z_axis;
     //MadgwickAHRSupdateIMU(gyro.x_axis * TO_RAD, gyro.y_axis * TO_RAD, gyro.z_axis * TO_RAD, accel.x_axis* 9.81, accel.y_axis * 9.81, accel.z_axis * 9.81);
-    MadgwickAHRSupdateIMU(gyro.x_axis * TO_RAD, gyro.y_axis * TO_RAD, gyro.z_axis * TO_RAD, accel.x_axis, accel.y_axis, accel.z_axis);
+    MadgwickAHRSupdateIMU(gyro.x_axis * TO_RAD, gyro.y_axis*TO_RAD, gyro.z_axis*TO_RAD, accel.x_axis, accel.y_axis, accel.z_axis);
 
     quat.w = q0;
     quat.x = q1;
@@ -106,8 +109,10 @@ void update_angles(angles_t * angles) {
     euler = ToEulerAngles(quat);
     angles->theta_x = euler.roll;
     angles->theta_y = euler.pitch;
-    angles->theta_z = euler.yaw;
-    printf("%f\n", euler.yaw);
+    angles->theta_z = euler.yaw * TO_DEG * GYRO_SCALING_Z;
+    // prinf("YAW_OG: %f\n", euler.yaw * TO_DEG * GYRO_SCALING_Z);
+    // printf("Roll: %f Pitch: %f Yaw: %f\n", euler.roll, euler.pitch, euler.yaw * TO_DEG * GYRO_SCALING_Z);
     sample_imu = false;
+    angles->time_stamp = timestamp();
   }
 }

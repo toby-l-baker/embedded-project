@@ -12,6 +12,8 @@
 #define REVERSE				-1
 #define STOP				0
 
+#define TIMER_MODULE_TIMER 		4
+
 #define FLYWHEEL_PIN_ENABLE NRF_GPIO_PIN_MAP(0,11)
 #define FLYWHEEL_PIN_IN1 NRF_GPIO_PIN_MAP(0,12) // 26
 #define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,13) //2
@@ -40,7 +42,7 @@
 #define NUM_SAMPLES 4096
 #define LEN_BUFFER 30
 
-#define IMU_TIMER_REFRESH_RATE 1.0
+#define IMU_TIMER_REFRESH_RATE 1.9
 
 /*************** Self driving ******************/
 

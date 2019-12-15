@@ -22,7 +22,6 @@
 #include "display.h"
 #include "mpu9250.h"
 #include "simple_ble.h"
-#include "tail_lights.h"
 #include "timer_module.h"
 #include "states.h"
 #include "servo_driver.h"
@@ -114,7 +113,6 @@ float x, y, heading;
 int main(void) {
   // setup the board
   initialize_buckler();
-
 	// Setup BLE
 	simple_ble_app = simple_ble_init(&ble_config);
 
@@ -150,28 +148,36 @@ int main(void) {
 	struct dc_motor * drive = create_dc_motor(DRIVE_PIN_ENABLE, DRIVE_PIN_IN1, DRIVE_PIN_IN2, DRIVE_MOTOR_CHANNEL);
   struct dc_motor * flywheel = create_dc_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, FlYWHEEL_MOTOR_CHANNEL);
 	initialize_dc_motor_pwm(drive, flywheel);
-
+  // init_timer();
+  bool ble = true;
+  init_mpu9250_timer(IMU_TIMER_REFRESH_RATE, ble);
+  init_mpu9250();
   int8_t direction = STOP;
 
   // /* TAIL LIGHTS SETUP */
-  init_timer();
-  init_mpu9250_timer(IMU_TIMER_REFRESH_RATE);
-  init_mpu9250();
   struct angles_t * angles = malloc(sizeof(angles_t));
 
   // init_tail_lights();
 
   init_tracking(drive, front, angles);
-
+  //
   start_tracking();
 	// loop forever, running state machine
   printf("Entering Main\n");
+  bool first_time = false;
+  float first_timestamp = 0;
 	while (1) {
 
     char print_string[16];
     // read sensors from robot
     // Update angles and lights
     update_angles(angles);
+    if (first_time == false) {
+      first_timestamp = angles->time_stamp;
+      first_time = true;
+    }
+    // printf("YAW: %f\n", (angles->theta_z) - (angles->time_stamp - first_timestamp) * 0.33);
+    printf("TIMESTAMP: %f\n", angles->time_stamp);
     // update_lights(angles);
 
     switch(bike_state) {

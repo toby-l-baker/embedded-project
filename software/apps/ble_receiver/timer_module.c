@@ -31,36 +31,34 @@ void end_timer(){
 float timestamp(){
 	// printf("In timestamp: %f\n", get_timer_value());
 
-	return (float)(convert_to_secs(get_timer_value())) ;
+	return (float)(get_timer_value())*PRESCALE_CONV ;
 }
 
 uint32_t get_timer_value() {
-	NRF_TIMER2->TASKS_CAPTURE[1] = 1;
-	uint32_t timer_value = NRF_TIMER2->CC[1];
+	NRF_TIMER4->TASKS_CAPTURE[1] |= 1;
+	uint32_t timer_value = NRF_TIMER4->CC[1];
 	// NRF_TIMER4->TASKS_CAPTURE[1] ;
 	return timer_value;
 }
 
 float convert_to_secs(uint32_t time){
-	return (float)(time /CLOCK_SPEED*PRESCALER_VALUE);
+	return (float)(time * PRESCALE_CONV);
 
 }
 
 void print_timer_vals(){
 	for (int i =0; i < NUM_LOOPS; i++){
-		printf("%f, ", (float)(recorded_vals[i]/CLOCK_SPEED*PRESCALER_VALUE));
+		printf("%f, ", (float)(recorded_vals[i]* PRESCALE_CONV));
 	}
-
-
 }
 
-void init_timer() {
+void init_timer_module() {
 
-	NRF_TIMER2->MODE          = 0; //Timer not counter
-	NRF_TIMER2->BITMODE       = 3; //32 bits
-	NRF_TIMER2->PRESCALER     = 9; //31 250 Hz
-	NRF_TIMER2->TASKS_CLEAR   = 1; //Reset value to 0
-	NRF_TIMER2->TASKS_START   = 1;
-// NVIC_EnableIRQ(TIMER4_IRQn);
-	printf("Initialized timer counter register\n");
+	NRF_TIMER4->BITMODE = 3;
+	NRF_TIMER4->PRESCALER = 0; // Read at 16 Mhz / 16 = 1MHz
+	NRF_TIMER4->TASKS_CLEAR = 1; //Set TASKS_CLEAR
+	NRF_TIMER4->TASKS_START = 1; //Set TASKS_START
+	NRF_TIMER4->INTENSET = 1<<16; //Enable interrupts for CC[0]
+	// NVIC_EnableIRQ(TIMER4_IRQn);
+	printf("Timer module initialized using TIMER%i.\n", TIMER_MODULE_TIMER);
 }

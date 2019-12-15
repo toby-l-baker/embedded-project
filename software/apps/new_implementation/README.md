@@ -1,7 +1,20 @@
-# Instructions for fixing timer conflict: 
-`ERROR 8 [NRF_ERROR_INVALID_STATE]`
-### Edit line 25 of embedded-project/software/libraries/mpu9250/mpu9250.c to a new timer:
-`static const nrf_drv_timer_t gyro_timer = NRFX_TIMER_INSTANCE(4);`
-### Add the following definitions for the timer X:
-`#define NRFX_TIMER<X>_ENABLED 1`
-`#define TIMER<X>_ENABLED 1`
+# Timers
+MPU I2C:          1 <br />
+Servo Motor PWM:  2 <br />
+DC Motor PWM:     3 <br />
+Timer Module:     4 <br />
+
+## Add the following macros to: <br /> 
+`embedded-project/software/buckler/software/boards/buckler_revB/app_config.h`
+
+`#define NRFX_TIMER0_ENABLED 1`<br />
+`#define TIMER0_ENABLED 1`<br />
+`#define NRFX_TIMER1_ENABLED 1`<br />
+`#define TIMER1_ENABLED 1`<br />
+`#define NRFX_TIMER2_ENABLED 1`<br />
+`#define TIMER2_ENABLED 1`<br />
+`#define NRFX_TIMER3_ENABLED 1`<br />
+`#define TIMER3_ENABLED 1`<br />
+`#define NRFX_TIMER4_ENABLED 1`<br />
+`#define TIMER4_ENABLED 1`<br />
+
