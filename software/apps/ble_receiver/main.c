@@ -22,7 +22,6 @@
 #include "display.h"
 #include "mpu9250.h"
 #include "simple_ble.h"
-#include "tail_lights.h"
 #include "timer_module.h"
 #include "states.h"
 #include "servo_driver.h"
@@ -150,7 +149,8 @@ int main(void) {
   struct dc_motor * flywheel = create_dc_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, FlYWHEEL_MOTOR_CHANNEL);
 	initialize_dc_motor_pwm(drive, flywheel);
   // init_timer();
-  init_mpu9250_timer(IMU_TIMER_REFRESH_RATE);
+  bool ble = true;
+  init_mpu9250_timer(IMU_TIMER_REFRESH_RATE, ble);
   init_mpu9250();
   int8_t direction = STOP;
 

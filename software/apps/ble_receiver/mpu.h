@@ -35,7 +35,7 @@ typedef struct EulerAngles {
     float roll, pitch, yaw;
 } EulerAngles;
 
-void init_mpu9250_timer(float ms);
+void init_mpu9250_timer(float ms, bool ble);
 void init_mpu9250();
 void update_angles(angles_t* angles);
 

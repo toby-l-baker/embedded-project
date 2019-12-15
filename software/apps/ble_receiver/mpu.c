@@ -62,11 +62,13 @@ void init_mpu9250() {
   printf("IMU initialized!\n");
 }
 
-void init_mpu9250_timer(float ms) {
+void init_mpu9250_timer(float ms, bool ble) {
   ret_code_t error_code = NRF_SUCCESS;
   // lfclk_request();
   //Initlize timer library
-  // error_code = app_timer_init();
+  if (ble == false) {
+    error_code = app_timer_init();
+  }
   // APP_ERROR_CHECK(error_code);
   // Create timer instance
   APP_TIMER_DEF(IMU_TIMER);
