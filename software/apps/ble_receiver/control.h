@@ -20,4 +20,7 @@ float get_distance();
 float get_heading();
 void get_bike_state(float * x_coo, float * y_coo, float * heading_coo);
 
+float calc_steering();
+void set_dest(float x_d, float y_d);
+
 #endif

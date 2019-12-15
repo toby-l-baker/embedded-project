@@ -167,6 +167,7 @@ int main(void) {
   bool first_time = false;
   float first_timestamp = 0;
   int i = 0;
+  bike_state = AUTONOMOUS;
 	while (1) {
 
     char print_string[16];
@@ -225,10 +226,13 @@ int main(void) {
           /*** GET THE PATH FOR THE BIKE TO AUTONOMOUSLY FOLLOW ***/
           float actual_path_plan;
           case GET_PATH: {
+            set_dest(1, 0);
+            float angle = calc_steering();
+            printf("%f\n", angle);
             //Integrate the joystick to get a vector
             printf("Getting path\n");
             // actual_path_plan = (float)  path_plan;
-            sprintf(print_string, "r:%f  theta:%f", path_plan[0], path_plan[1]);
+            // spr?intf(print_string, "r:%f  theta:%f", path_plan[0], path_plan[1]);
             break;
           }
           /*** FOLLOW THE SET PATH ***/
