@@ -63,10 +63,10 @@ void init_mpu9250() {
 
 void init_mpu9250_timer(float ms) {
   ret_code_t error_code = NRF_SUCCESS;
-  lfclk_request();
+  // lfclk_request();
   //Initlize timer library
-  error_code = app_timer_init();
-  APP_ERROR_CHECK(error_code);
+  // error_code = app_timer_init();
+  // APP_ERROR_CHECK(error_code);
   // Create timer instance
   APP_TIMER_DEF(IMU_TIMER);
   error_code = app_timer_create(&IMU_TIMER, APP_TIMER_MODE_REPEATED, imu_callback);

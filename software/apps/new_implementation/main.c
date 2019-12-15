@@ -5,8 +5,10 @@
 #include "timer_module.h"
 #include "mpu.h"
 #include "tail_lights.h"
+#include "simple_ble.h"
 
 #define BALANCING
+
 
 
 int main(){
@@ -23,11 +25,19 @@ int main(){
 
     init_timer_module();
 
+    init_ble_receiver();
     init_mpu9250();
     init_mpu9250_timer(IMU_TIMER_REFRESH_RATE); 
   
 
     init_tail_lights();
+    
+
+
+
+   
+
+
 
   
 
@@ -49,11 +59,12 @@ int main(){
         
         // duty_cycle_PWM_PID(angles->theta_x, angles->)
         // duty_cycle_torque_proportional
-        duty_cycle_torque_PID(angles->theta_x, angles->time_stamp, &duty_cycle, &direction);
+        // duty_cycle_torque_PID(angles->theta_x, angles->time_stamp, &duty_cycle, &direction);
      
-        if (i++ %10 == 0)
+        if (i++ %100 == 0)
             print_angles(angles, duty_cycle);
-        update_lights(angles);
+            // printf("%i\n", bike_state);
+        // update_lights(angles);
 
        
 

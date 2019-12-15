@@ -17,6 +17,8 @@
 #include "app_timer.h"
 #include "nrf_delay.h"
 #include "nrf_drv_spi.h"
+#include "ble_receiver.h"
+#include "simple_ble.h"
 
 #include "display.h"
 
@@ -27,6 +29,7 @@
 #include "servo.h"
 #include "mpu.h"
 #include "board_params.h"
+#include "states.h"
 
 
 void initialize_buckler();
