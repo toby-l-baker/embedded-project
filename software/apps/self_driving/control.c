@@ -17,16 +17,16 @@ float last_update_timestamp = 0;
 float last_update_front_PWM = 0;
 int last_update_back_PWM = 0;
 
-APP_TIMER_DEF(m_repeated_timer_id); 
+APP_TIMER_DEF(m_repeated_timer_id);
 
 void update_state(float delta_t) {
 	float v_b = 0.01*last_update_back_PWM * 6.28* WHEEL_RADIUS_CM*DRIVE_RPM_PER_PWM/60.0;
 	float l = BIKE_LENGTH_M;
-	float nu = 3.14/180*((last_update_front_PWM-2)*170/12.0 - 85.0);
+	// float nu = 3.14/180*((last_update_front_PWM-2)*170/12.0 - 85.0);
 
 	x += v_b * cos(heading) * delta_t;
 	y += v_b * sin(heading) * delta_t;
-	heading += v_b * tan(nu)/l * delta_t;;
+	// heading += v_b * tan(nu)/l * delta_t;
 }
 
 
@@ -44,7 +44,7 @@ static void tracking_handler(void * p_context) {
 	//Update old timestamp
 	last_update_timestamp = current_timestamp;
 	//Update old front heading
-	last_update_front_PWM = front->duty_cycle;
+	last_update_front_PWM = angles->theta_z;
 
     return;
 }
@@ -123,7 +123,7 @@ float calc_steering() {
 	float L = 1; // Bike Length
 
 	float alpha = calc_alpha();
-	float steering = atanf(2*L*sin(alpha)/(k*vx)); 
+	float steering = atanf(2*L*sin(alpha)/(k*vx));
 	if (steering > 45.0) {
 		steering = 45.0;
 	}

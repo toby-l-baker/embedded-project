@@ -11,6 +11,7 @@ Quaternion quat;
 EulerAngles euler;
 
 bool sample_imu = false;
+bool update_z = false;
 
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 
@@ -47,6 +48,7 @@ EulerAngles ToEulerAngles(Quaternion q) {
 static void imu_callback(void * p_context)
 {
   sample_imu = true;
+  update_z = true;
 }
 
 void init_mpu9250() {
