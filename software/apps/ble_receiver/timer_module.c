@@ -56,7 +56,7 @@ void init_timer_module() {
 
 	NRF_TIMER4->BITMODE = 3;
 	NRF_TIMER4->MODE = 0;
-	NRF_TIMER4->PRESCALER = 0; // Read at 16 Mhz / 16 = 1MHz
+	NRF_TIMER4->PRESCALER = 4; // Read at 16 Mhz / 16 = 1MHz
 	NRF_TIMER4->TASKS_CLEAR = 1; //Set TASKS_CLEAR
 	NRF_TIMER4->TASKS_START = 1; //Set TASKS_START
 	NRF_TIMER4->INTENSET = 1<<16; //Enable interrupts for CC[0]

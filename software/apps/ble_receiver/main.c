@@ -174,13 +174,13 @@ int main(void) {
     // Update angles and lights
     update_angles(angles);
     if (first_time == false) {
-      first_timestamp = angles->time_stamp;
+      first_timestamp = angles->time_stamp * 0.000001;
       first_time = true;
     }
-    // printf("YAW: %f\n", (angles->theta_z) - (angles->time_stamp - first_timestamp) * 0.33);
-    if (i++ % 100 == 0) {
-      printf("TIMESTAMP: %f\n", angles->time_stamp);
-    }
+    angles->theta_z = (angles->theta_z) - (angles->time_stamp * 0.000001 - first_timestamp) * 0.33;
+    // if (i++ % 100 == 0) {
+    //   printf("TIMESTAMP: %f\n", angles->time_stamp);
+    // }
     // update_lights(angles);
 
     switch(bike_state) {
@@ -196,9 +196,7 @@ int main(void) {
         sprintf(print_string, "Spd:%d  Ang:%d", drive_speed, turn_angle);
         // print_state(bike_state);
         //set servo angle
-        // printf("Turning Angle:%d\n", turn_angle);
-        set_servo_angle(front, (float) 0);
-        nrf_delay_ms(50);
+        set_servo_angle(front, (float) turn_angle);
 
         if (drive_speed == 0){
         	// if speed is negative reverse
@@ -213,12 +211,10 @@ int main(void) {
         // printf("Drive Speed PWM:%d\n", drive_speed);
         // printf("Drive Speed DIR:%d\n", direction);
         set_dc_motor_direction(drive, direction);
-    	  set_dc_motor_pwm(drive, turn_angle);
+    	  set_dc_motor_pwm(drive, drive_speed);
         get_bike_state(&x, &y, &heading);
         printf("x: %f, y %f, heading: %f\n", x, y, heading);
         //set_dc_motor_pwm(flywheel, drive_speed);
-        nrf_delay_ms(50);
-
         break;
       }
 
