@@ -8,6 +8,9 @@
 #include "servo_driver.h"
 #include "mpu.h"
 
+#define TO_RAD 0.0174532925 // PI / 180
+#define TO_DEG 57.2957795131 // 180 / PI
+
 extern bool nav_complete;
 
 //Starts a fast timer that updates

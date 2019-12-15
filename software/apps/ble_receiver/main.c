@@ -69,6 +69,7 @@ int8_t path_angle; //will be 0 to 255, need to do 360/255 * path_angle to get de
 
 bool path_len_received = false;
 bool path_angle_received = false;
+bool destination_set = false;
 
 simple_ble_app_t* simple_ble_app;
 
@@ -94,9 +95,11 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
     } else if (simple_ble_is_char_event(p_ble_evt, &path_len_char)) {
       nav_complete = false;
       path_len_received = true;
-    } else if (simple_ble_is_char_event(p_ble_evt, &path_len_char)) {
+      destination_set = false;
+    } else if (simple_ble_is_char_event(p_ble_evt, &path_angle_char)) {
       nav_complete = false;
       path_angle_received = true;
+      destination_set = false;
     }
 }
 
@@ -149,11 +152,11 @@ int main(void) {
 	  &bike_srv, &turn_char);
 
 	simple_ble_add_characteristic(1, 1, 0, 0,
-	  sizeof(path_len), (uint8_t*)path_len,
+	  sizeof(path_len), (uint8_t*)&path_len,
 	  &bike_srv, &path_len_char);
 
   simple_ble_add_characteristic(1, 1, 0, 0,
-	  sizeof(path_angle), (uint8_t*)path_angle,
+	  sizeof(path_angle), (uint8_t*)&path_angle,
 	  &bike_srv, &path_angle_char);
 
 	/* Initialize servo. */
@@ -193,17 +196,14 @@ int main(void) {
       first_timestamp = angles->time_stamp * 0.000001;
       first_time = true;
     }
-    float hold;
     if (update_z) {
-      angles->heading = (angles->heading) - (angles->time_stamp * 0.000001 - first_timestamp) * 0.33;
+      angles->heading = (angles->heading) - (angles->time_stamp * 0.000001 - first_timestamp) * 0.305;
       update_z = false;
     }
-    printf("angle_z: %f\n", hold);
-    // if (i++ % 100 == 0) {
-    //   printf("TIMESTAMP: %f\n", angles->time_stamp);
+    // if (i++ % 10 == 0) {
+    //   printf("angle_z: %f\n", angles->heading);
+    //
     // }
-    // update_lights(angles);
-    set_dest(0, 5);
     switch(bike_state) {
       /*** BIKE OFF, ONLY BALANCING ***/
       case OFF: {
@@ -234,7 +234,10 @@ int main(void) {
         set_dc_motor_direction(drive, direction);
     	  set_dc_motor_pwm(drive, drive_speed);
         get_bike_state(&x, &y, &heading);
-        printf("x: %f, y %f, heading: %f\n", x, y, heading);
+        if (i++ % 10 == 0) {
+          printf("%f\n", angles->time_stamp);
+          printf("x: %f, y %f, heading: %f\n", x, y, heading);
+        }
         //set_dc_motor_pwm(flywheel, drive_speed);
         break;
       }
@@ -247,11 +250,13 @@ int main(void) {
           direction = STOP;
           drive_speed = 0;
           turn_angle = 0;
+          printf("IM DOING NOTHING: nav %d, len: %d, ang: %d\n", nav_complete, path_len_received, path_angle_received);
         } else {
-          if ((path_angle_received) && (path_len_received)) {
+          /*** FOLLOW THE PATH ***/
+          if (destination_set == false) {
+            printf("Angle:%d, Length:%d\n", path_angle, path_len);
             set_dest(path_len, path_angle);
-            path_angle_received = false;
-            path_len_received = false;
+            destination_set = true;
           }
           direction = FORWARD;
           drive_speed = 100;
@@ -265,6 +270,6 @@ int main(void) {
         break;
       }
     }
-    nrf_delay_ms(1);
+    nrf_delay_ms(5);
 	}
 }

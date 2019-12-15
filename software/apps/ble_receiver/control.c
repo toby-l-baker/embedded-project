@@ -26,15 +26,16 @@ void update_state(float delta_t) {
 	float l = BIKE_LENGTH_M;
 	// float nu = 3.14/180*((last_update_front_PWM-2)*170/12.0 - 85.0);
 
-	x += v_b * cos(heading) * delta_t;
-	y += v_b * sin(heading) * delta_t;
+	x += v_b * cos(heading * TO_RAD) * delta_t;
+	y += v_b * sin(heading * TO_RAD) * delta_t;
 	// heading += v_b * tan(nu)/l * delta_t;;
 }
 
 
 static void tracking_handler(void * p_context) {
-	float current_timestamp = convert_to_secs(get_timer_value());
-	float delta_t = current_timestamp - last_update_timestamp;
+	float current_timestamp = angle->time_stamp;
+	// printf("%f\n", current_timestamp);
+	float delta_t = (current_timestamp - last_update_timestamp) * PRESCALE_CONV;
 	// printf("DELTA_T: %f\n", delta_t);
 
 	update_state(delta_t);
@@ -49,7 +50,7 @@ static void tracking_handler(void * p_context) {
 	//Update old front heading
 	heading = angle->heading;//front->duty_cycle;
 
-    return;
+  return;
 }
 
 ret_code_t init_tracking(struct dc_motor* drive_motor, struct servo* front_servo, struct angles_t * angles) {
@@ -60,9 +61,9 @@ ret_code_t init_tracking(struct dc_motor* drive_motor, struct servo* front_servo
 	init_timer_module();
 	ret_code_t err_code;
 
-	// ret_code_t err_code = nrf_drv_clock_init();
-  //   APP_ERROR_CHECK(err_code);
-  //   nrf_drv_clock_lfclk_request(NULL);
+	// err_code = nrf_drv_clock_init();
+  // APP_ERROR_CHECK(err_code);
+  // nrf_drv_clock_lfclk_request(NULL);
 
 	// app_timer_init();
 
@@ -94,7 +95,7 @@ void reset_tracking() {
 	x = 0.0;
 	y = 0.0;
 	heading = 0.0;
-	last_update_timestamp = convert_to_secs(get_timer_value());
+	last_update_timestamp = angle->time_stamp;
 	last_update_back_PWM = (int) ((int) (drive->duty_cycle)) * drive->direction;
 }
 
@@ -107,12 +108,13 @@ void get_bike_state(float* x_coo, float* y_coo, float* heading_coo) {
 
 void set_dest(float path_len, float path_angle){
 	float path_angle_deg = path_angle * 360 / 255;
-	float path_angle_rad = path_angle_deg * 180 / 3.14159;
+	float path_angle_rad = path_angle_deg * TO_RAD;
 	float x_d = path_len / 100 * sin(path_angle_rad);
 	float y_d = path_len / 100 * cos(path_angle_rad);
 	// Get the x_dest and y_dest in terms of the global coordinate frame
-	x_dest = x_d * cos(heading * 180 / 3.14159) - y_d * sin(heading * 180 / 3.14159) + x;
-	y_dest = x_d * sin(heading * 180 / 3.14159) + y_d * cos(heading * 180 / 3.14159) + y;
+	float heading_rad = heading * TO_RAD;
+	x_dest = x_d * cos(heading_rad) - y_d * sin(heading_rad) + x;
+	y_dest = x_d * sin(heading_rad) + y_d * cos(heading_rad) + y;
 	printf("X_GOAL: %f, Y_GOAL: %f\n", x_dest, y_dest);
 }
 
@@ -141,8 +143,8 @@ float calc_steering() {
 	else if (steering < -45.0) {
 		steering = -45.0;
 	}
-
-	if ((abs(x_dest - x) < 0.2) && (abs(y_dest - y) < 0.2)) {
+	float euclidean = sqrt((x_dest - x)*(x_dest - x) + (y_dest - y)*(y_dest - y));
+	if (euclidean < 0.2) {
 		nav_complete = true;
 	}
 

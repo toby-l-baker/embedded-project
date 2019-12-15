@@ -19,8 +19,8 @@
 #define FLYWHEEL_PIN_IN2 NRF_GPIO_PIN_MAP(0,13) //2
 
 #define DRIVE_PIN_ENABLE NRF_GPIO_PIN_MAP(0,3)
-#define DRIVE_PIN_IN1 NRF_GPIO_PIN_MAP(0,28)
-#define DRIVE_PIN_IN2 NRF_GPIO_PIN_MAP(0,4)
+#define DRIVE_PIN_IN1 NRF_GPIO_PIN_MAP(0,4)
+#define DRIVE_PIN_IN2 NRF_GPIO_PIN_MAP(0,28)
 
 // Pins used for servo motor turning the front fork
 #define SERVO_PIN NRF_GPIO_PIN_MAP(0,27)

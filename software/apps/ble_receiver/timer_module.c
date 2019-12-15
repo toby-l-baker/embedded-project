@@ -41,9 +41,8 @@ uint32_t get_timer_value() {
 	return timer_value;
 }
 
-float convert_to_secs(uint32_t time){
-	return (float)(time * PRESCALE_CONV);
-
+float convert_to_secs(uint32_t time_){
+	return (float)(time_ * PRESCALE_CONV);
 }
 
 void print_timer_vals(){

@@ -59,7 +59,7 @@ class BikeController():
         self.y = 0
 
         # integral time constant for auonomous path plan
-        self.int_const = 0.003 * 100 # A somewhat magic number that gives the resolution we want
+        self.int_const = 0.006 # A somewhat magic number that gives the resolution we want
         self.path_length = 0
         self.path_angles = []
 
@@ -98,7 +98,7 @@ class BikeController():
     def map_180_to_uint(self, list):
         average = np.average(list)
         val = np.interp(average, (-180, 180), (-128, 127))
-        if num < 0:
+        if val < 0:
             return np.uint8(256 + val)
         else:
             return np.uint8(val)
@@ -147,14 +147,12 @@ class BikeController():
                 if event.code == self.buttons["UP"] and event.value == 1:
                     if self.state == States.AUTONOMOUS:
                         '''Print desired path and send to buckler'''
-                        print("(r (cm), theta (deg)): ({},{})".format(self.path_length, self.path_angle * 360/255))
-                        self.path_len_char.write(bytes([self.path_length]))
+                        print("(r (cm), theta (deg)): ({},{})".format(np.uint8(self.path_length), self.path_angle * 360/255))
+                        self.path_len_char.write(bytes([np.uint8(self.path_length)]))
                         self.path_angle_char.write(bytes([self.path_angle]))
                         '''Reset path lengths and angles'''
                         self.path_length = 0
                         self.path_angles = []
-
-
 
             '''Update instructions for bike'''
             if event.type == ecodes.EV_ABS:

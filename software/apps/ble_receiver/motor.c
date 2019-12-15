@@ -38,22 +38,22 @@ void set_dc_motor_direction(struct dc_motor * motor, int8_t direction){
     motor->direction = direction;
     switch(direction){
         case FORWARD:
-            printf("Setting direction to forward.\n");
+            // printf("Setting direction to forward.\n");
             nrf_gpio_pin_set(motor->in1);
             nrf_gpio_pin_clear(motor->in2);
             break;
         case REVERSE:
-            printf("Setting direction to reverse.\n");
+            // printf("Setting direction to reverse.\n");
             nrf_gpio_pin_set(motor->in2);
             nrf_gpio_pin_clear(motor->in1);
             break;
         case STOP:
-            printf("Setting direction to stop.\n");
+            // printf("Setting direction to stop.\n");
             nrf_gpio_pin_clear(motor->in1);
             nrf_gpio_pin_clear(motor->in2);
             break;
         default:
-            printf("ERROR: incorrect motor direction\n");
+            // printf("ERROR: incorrect motor direction\n");
             break;
     }
 }

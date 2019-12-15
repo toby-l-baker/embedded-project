@@ -7,7 +7,7 @@
 #include "board_params.h"
 
 #define NUM_LOOPS 100
-#define PRESCALE_CONV 62.5
+#define PRESCALE_CONV 0.000001
 
 void init_timer_module();
 
