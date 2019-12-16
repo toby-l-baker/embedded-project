@@ -109,13 +109,13 @@ void get_bike_state(float* x_coo, float* y_coo, float* heading_coo) {
 void set_dest(float path_len, float path_angle){
 	float path_angle_deg = path_angle * 360 / 255;
 	float path_angle_rad = path_angle_deg * TO_RAD;
-	float x_d = path_len / 100 * sin(path_angle_rad);
-	float y_d = path_len / 100 * cos(path_angle_rad);
+	float x_d = path_len / 100 * cos(path_angle_rad); //1
+	float y_d = path_len / 100 * sin(path_angle_rad); //0
 	// Get the x_dest and y_dest in terms of the global coordinate frame
 	float heading_rad = heading * TO_RAD;
 	x_dest = x_d * cos(heading_rad) - y_d * sin(heading_rad) + x;
 	y_dest = x_d * sin(heading_rad) + y_d * cos(heading_rad) + y;
-	printf("X_GOAL: %f, Y_GOAL: %f\n", x_dest, y_dest);
+	printf("X_GOAL: %f, Y_GOAL: %f, HEADING: %f\n", x_dest, y_dest, heading);
 }
 
 // void get_dest(){
@@ -123,27 +123,29 @@ void set_dest(float path_len, float path_angle){
 // }
 
 float calc_alpha() {
-	float angle2dest = atan2f((x-x_dest),(y-y_dest));
+	float angle2dest = atan2f((y-y_dest), (x-x_dest)); //CHANGED
 	float alpha = heading - angle2dest;
 	return alpha;
 }
 
 float calc_steering() {
-	float k = 1; // Gain
-	float vx = 1; // Constant longitutanal velocity
-	float L = 1; // Bike Length
+	float k = 0.5; // Gain
+	float vx = 0.3; // Constant longitutanal velocity
+	float L = 0.3; // Bike Length
 
 	float alpha = calc_alpha();
-	float steering = atanf(2*L*sin(alpha)/(k*vx)) * (180.0/3.14) ;
+	float steering = atan2f(2*L*sin(alpha),(k*vx)) * (TO_DEG) ;
 
-	if (steering > 45.0) {
-		steering = 45.0;
+	if (steering > 30.0) {
+		steering = 30.0;
 	}
 
-	else if (steering < -45.0) {
-		steering = -45.0;
+	else if (steering < -30.0) {
+		steering = -30.0;
 	}
+
 	float euclidean = sqrt((x_dest - x)*(x_dest - x) + (y_dest - y)*(y_dest - y));
+
 	if (euclidean < 0.2) {
 		nav_complete = true;
 	}

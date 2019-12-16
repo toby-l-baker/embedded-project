@@ -92,16 +92,19 @@ int main (void) {
    //   nrf_delay_ms(1000);
    //   printf("7.5\n");
 
+     set_servo_angle(front, (0));
+     nrf_delay_ms(5000);
+
       set_servo_angle(front, (45));
-      nrf_delay_ms(1000);
+      nrf_delay_ms(5000);
       //printf("145\n");
 
       set_servo_angle(front, (0));
-      nrf_delay_ms(1000);
+      nrf_delay_ms(5000);
       //printf("7.5\n");
 
       set_servo_angle(front, (-45));
-      nrf_delay_ms(1000);
+      nrf_delay_ms(5000);
       //printf("13\n");
     }
 }

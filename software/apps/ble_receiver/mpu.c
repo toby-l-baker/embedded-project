@@ -95,12 +95,12 @@ void update_angles(angles_t * angles) {
     accel = mpu9250_read_accelerometer();
 
 
-      angles->raw_accel_x = accel.x_axis;
-      angles->raw_accel_y = accel.y_axis;
-      angles->raw_accel_z = accel.z_axis;
-      angles->raw_imu_theta_x = gyro.x_axis;
-      angles->raw_imu_theta_y = gyro.y_axis;
-      angles->raw_imu_theta_z = gyro.z_axis;
+    angles->raw_accel_x = accel.x_axis;
+    angles->raw_accel_y = accel.y_axis;
+    angles->raw_accel_z = accel.z_axis;
+    angles->raw_imu_theta_x = gyro.x_axis;
+    angles->raw_imu_theta_y = gyro.y_axis;
+    angles->raw_imu_theta_z = gyro.z_axis;
     //MadgwickAHRSupdateIMU(gyro.x_axis * TO_RAD, gyro.y_axis * TO_RAD, gyro.z_axis * TO_RAD, accel.x_axis* 9.81, accel.y_axis * 9.81, accel.z_axis * 9.81);
     MadgwickAHRSupdateIMU(gyro.x_axis * TO_RAD, gyro.y_axis*TO_RAD, gyro.z_axis*TO_RAD, accel.x_axis, accel.y_axis, accel.z_axis);
 
@@ -112,9 +112,6 @@ void update_angles(angles_t * angles) {
     angles->theta_x = euler.roll;
     angles->theta_y = euler.pitch;
     angles->theta_z = euler.yaw;
-    angles->heading = euler.yaw * TO_DEG * GYRO_SCALING_Z;
-    // prinf("YAW_OG: %f\n", euler.yaw * TO_DEG * GYRO_SCALING_Z);
-    // printf("Roll: %f Pitch: %f Yaw: %f\n", euler.roll, euler.pitch, euler.yaw * TO_DEG * GYRO_SCALING_Z);
     sample_imu = false;
     angles->time_stamp = timestamp();
   }

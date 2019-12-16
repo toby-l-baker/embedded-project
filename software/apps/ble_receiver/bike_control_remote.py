@@ -6,10 +6,14 @@ from enum import Enum
 from bluepy.btle import Peripheral, DefaultDelegate
 from evdev import InputDevice, ecodes, categorize
 
-parser = argparse.ArgumentParser(description='Print advertisement data from a BLE device')
-parser.add_argument('addr', metavar='A', type=str, help='Address of the form XX:XX:XX:XX:XX:XX')
-args = parser.parse_args()
-addr = args.addr.lower()
+# parser = argparse.ArgumentParser(description='Print advertisement data from a BLE device')
+# parser.add_argument('addr', metavar='A', type=str, help='Address of the form XX:XX:XX:XX:XX:XX')
+# args = parser.parse_args()
+# addr = args.addr.lower()
+addr = "c0:98:e5:49:00:0b"
+BLE = True
+event = "event5"
+
 if len(addr) != 17:
     raise ValueError("Invalid address supplied")
 
@@ -26,25 +30,24 @@ class States(Enum):
     AUTONOMOUS=1
     MANUAL=2
 
-# TO RUN THIS CODE sudo python3 bike_control_remote.py c0:98:e5:49:00:0b
-
+# TO RUN THIS CODE sudo python3 bike_control_remote.py
 
 class BikeController():
 
     def __init__(self, address):
-
-        self.bike = Peripheral(addr)
-        self.sv = self.bike.getServiceByUUID(SERVICE_UUID)
-        self.manual_char = self.sv.getCharacteristics(CHAR_UUIDS[0])[0]
-        self.power_char = self.sv.getCharacteristics(CHAR_UUIDS[1])[0]
-        self.drive_char = self.sv.getCharacteristics(CHAR_UUIDS[2])[0]
-        self.turn_char = self.sv.getCharacteristics(CHAR_UUIDS[3])[0]
-        self.path_len_char = self.sv.getCharacteristics(CHAR_UUIDS[4])[0]
-        self.path_angle_char = self.sv.getCharacteristics(CHAR_UUIDS[5])[0]
+        if BLE:
+            self.bike = Peripheral(addr)
+            self.sv = self.bike.getServiceByUUID(SERVICE_UUID)
+            self.manual_char = self.sv.getCharacteristics(CHAR_UUIDS[0])[0]
+            self.power_char = self.sv.getCharacteristics(CHAR_UUIDS[1])[0]
+            self.drive_char = self.sv.getCharacteristics(CHAR_UUIDS[2])[0]
+            self.turn_char = self.sv.getCharacteristics(CHAR_UUIDS[3])[0]
+            self.path_len_char = self.sv.getCharacteristics(CHAR_UUIDS[4])[0]
+            self.path_angle_char = self.sv.getCharacteristics(CHAR_UUIDS[5])[0]
 
         print("connected")
         # Setup the gamepad and print its information
-        self.gamepad = InputDevice('/dev/input/event7')
+        self.gamepad = InputDevice('/dev/input/'+event)
         print(self.gamepad)
         self.count = 0
 
@@ -52,7 +55,7 @@ class BikeController():
         self.buttons = {"A": 305, "B": 306, "START": 316, "UP": 313, "JOY_X": 0, "JOY_Y": 1}
         self.state = States.IDLE
         # dicts for mapping angles and speeds to new ranges
-        self.turn_map = {"new_min": -45, "new_max": 45, "min": -90, "max": 90}
+        self.turn_map = {"new_min": -30, "new_max": 30, "min": -90, "max": 90}
         self.drive_map = {"new_min": -100, "new_max": 100, "min": -128, "max": 128}
         #initial values for x and y
         self.x = 0
@@ -72,8 +75,10 @@ class BikeController():
     def map_angle(self):
         if self.y < 0:
             angle = (np.arctan2(self.y, self.x) * 180 / np.pi + 90)
+            angle = -angle # account for RH rule convention
         else:
             angle = (np.arctan2(self.x, self.y) * 180 / np.pi)
+            angle = -angle # account for RH rule convention
 
         val = np.interp(angle, (self.turn_map["min"], self.turn_map["max"]), (self.turn_map["new_min"], self.turn_map["new_max"]))
         self.angle = int(val)
@@ -120,14 +125,16 @@ class BikeController():
                 if event.code == self.buttons["A"] and event.value == 1:
                     self.state = States.AUTONOMOUS
                     print(self.state)
-                    self.manual_char.write(bytes([False]))
+                    if BLE:
+                        self.manual_char.write(bytes([False]))
                     time.sleep(0.1)
 
                 '''Set the state to be Manual when pressing B'''
                 if event.code == self.buttons["B"] and event.value == 1:
                     self.state = States.MANUAL
                     print(self.state)
-                    self.manual_char.write(bytes([True]))
+                    if BLE:
+                        self.manual_char.write(bytes([True]))
                     time.sleep(0.1)
 
                 '''Toggle state when pressing start'''
@@ -135,12 +142,14 @@ class BikeController():
                     if self.state == States.IDLE:
                         self.state = States.MANUAL
                         print(self.state)
-                        self.manual_char.write(bytes([True]))
+                        if BLE:
+                            self.manual_char.write(bytes([True]))
                         time.sleep(0.1)
                     else:
                         self.state = States.IDLE
                         print(self.state)
-                        self.power_char.write(bytes([False]))
+                        if BLE:
+                            self.power_char.write(bytes([False]))
                         time.sleep(0.1)
 
                 '''Send path to follow'''
@@ -148,8 +157,9 @@ class BikeController():
                     if self.state == States.AUTONOMOUS:
                         '''Print desired path and send to buckler'''
                         print("(r (cm), theta (deg)): ({},{})".format(np.uint8(self.path_length), self.path_angle * 360/255))
-                        self.path_len_char.write(bytes([np.uint8(self.path_length)]))
-                        self.path_angle_char.write(bytes([self.path_angle]))
+                        if BLE:
+                            self.path_len_char.write(bytes([np.uint8(self.path_length)])) #np.uint8(self.path_length)
+                            self.path_angle_char.write(bytes([self.path_angle])) #self.path_angle
                         '''Reset path lengths and angles'''
                         self.path_length = 0
                         self.path_angles = []
@@ -174,10 +184,11 @@ class BikeController():
                     self.map_speed()
                     speed = self.convert_to_uint(self.speed)
                     if self.count == 7 or (speed == 0 and angle == 0):
-                        self.drive_char.write(bytes([speed]))
                         print("Drive Speed: {}".format(speed))
-                        self.turn_char.write(bytes([angle]))
                         print("Turn Angle: {}".format(angle))
+                        if BLE:
+                            self.drive_char.write(bytes([speed]))
+                            self.turn_char.write(bytes([angle]))
                         self.count = 0
 
                     self.count += 1

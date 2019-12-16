@@ -50,7 +50,7 @@
 
 #define WHEEL_RADIUS_CM 4.50
 
-#define TRACKING_UPDATE_MS 100.0
+#define TRACKING_UPDATE_MS 10.0
 
 #define BIKE_LENGTH_M 0.30
 
