@@ -6,11 +6,13 @@
 // Comment out to remove adc filtering
 #define FILTER
 
-
 // Defines for directions used in set_dc_motor_direction()
 #define FORWARD				1
 #define REVERSE				-1
 #define STOP				0
+
+#define MAX_TURN_ANGLE 45
+#define CONTROL_GAIN 4.0
 
 #define TIMER_MODULE_TIMER 		4
 
@@ -86,12 +88,13 @@ from becoming to big and improves system stability ************/
 
 #define Kw 				0.95 //It should be less that 1
 
-#define BRAKE_ACCELERATION_USECOND_THRESH 10000000.0
+#define BRAKE_ACCELERATION_USECOND_THRESH 60000.0
+#define BRAKE_ACCEL_THRESHOLD_VAL_G			0.12
+
 #define BLINKER_PERIOD	0.25
 #define MINIMUM_BLINKER_ANGLE_PER_USECOND 0.000003
 
 #define MIN_DUTY_CYCLE 10
 #define MAX_DUTY_CYCLE 100
-
 
 #endif

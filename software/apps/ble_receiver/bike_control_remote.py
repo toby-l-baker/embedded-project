@@ -12,7 +12,7 @@ from evdev import InputDevice, ecodes, categorize
 # addr = args.addr.lower()
 addr = "c0:98:e5:49:00:0b"
 BLE = True
-event = "event5"
+event = "event7"
 
 if len(addr) != 17:
     raise ValueError("Invalid address supplied")
@@ -55,7 +55,7 @@ class BikeController():
         self.buttons = {"A": 305, "B": 306, "START": 316, "UP": 313, "JOY_X": 0, "JOY_Y": 1}
         self.state = States.IDLE
         # dicts for mapping angles and speeds to new ranges
-        self.turn_map = {"new_min": -30, "new_max": 30, "min": -90, "max": 90}
+        self.turn_map = {"new_min": -45, "new_max": 45, "min": -90, "max": 90}
         self.drive_map = {"new_min": -100, "new_max": 100, "min": -128, "max": 128}
         #initial values for x and y
         self.x = 0

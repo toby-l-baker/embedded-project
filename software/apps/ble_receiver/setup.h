@@ -18,6 +18,8 @@
 #include "app_timer.h"
 #include "servo_driver.h"
 #include "display.h"
+#include "tail_lights.h"
+#include "accel_list.h"
 
 #include <stdint.h>
 #include <stdlib.h>

@@ -62,7 +62,7 @@ static simple_ble_char_t turn_char = {.uuid16 = 0xeda4};
 int8_t turn_angle=0;
 
 static simple_ble_char_t path_len_char = {.uuid16 = 0xeda5};
-int8_t path_len; // will be range of 0 to 255 cm
+uint8_t path_len; // will be range of 0 to 255 cm
 
 static simple_ble_char_t path_angle_char = {.uuid16 = 0xeda6};
 int8_t path_angle; //will be 0 to 255, need to do 360/255 * path_angle to get degrees
@@ -177,7 +177,7 @@ int main(void) {
   struct angles_t * angles = malloc(sizeof(angles_t));
   angles->heading = 0.0;
 
-  // init_tail_lights();
+  init_tail_lights();
 
   init_tracking(drive, front, angles);
   //
@@ -187,6 +187,7 @@ int main(void) {
   bool first_time = false;
   float first_timestamp = 0;
   int i = 0;
+
   mpu9250_start_gyro_integration();
 	while (1) {
 
@@ -209,7 +210,7 @@ int main(void) {
         // print_state(bike_state);
         //set servo angle
         set_servo_angle(front, (float) turn_angle);
-
+        update_lights(angles);
         if (drive_speed == 0){
         	// if speed is negative reverse
           direction = STOP;
@@ -225,7 +226,7 @@ int main(void) {
         get_bike_state(&x, &y, &heading);
         if (i++ % 20 == 0) {
           // printf("%f\n", angles->time_stamp);
-          printf("x: %f, y %f, heading: %f\n", x, y, heading);
+          // printf("x: %f, y %f, heading: %f\n", x, y, heading);
         }
         //set_dc_motor_pwm(flywheel, drive_speed);
         break;
@@ -239,7 +240,7 @@ int main(void) {
           direction = STOP;
           drive_speed = 0;
           turn_auto = 0;
-          printf("IM DOING NOTHING: nav %d, len: %d, ang: %d\n", nav_complete, path_len_received, path_angle_received);
+          // printf("IM DOING NOTHING: nav %d, len: %d, ang: %d\n", nav_complete, path_len_received, path_angle_received);
           mpu9250_stop_gyro_integration();
         } else {
           /*** FOLLOW THE PATH ***/
@@ -255,9 +256,9 @@ int main(void) {
           drive_speed = 100;
           turn_auto = calc_steering();
           // printf("%d\n", turn_angle);
-          if (i++ % 20 == 0) {
-            printf("x: %f, y %f, heading: %f, turn angle: %f\n", x, y, heading, turn_auto);
-          }
+          // if (i++ % 20 == 0) {
+            // printf("x: %f, y %f, heading: %f, turn angle: %f\n", x, y, heading, turn_auto);
+          // }
         }
         set_dc_motor_direction(drive, direction);
         set_dc_motor_pwm(drive, drive_speed); //always drive at a constant speed in auto mode
