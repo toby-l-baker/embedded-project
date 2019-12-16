@@ -70,6 +70,7 @@ int8_t path_angle; //will be 0 to 255, need to do 360/255 * path_angle to get de
 bool path_len_received = false;
 bool path_angle_received = false;
 bool destination_set = false;
+float turn_auto = 0.0;
 
 simple_ble_app_t* simple_ble_app;
 
@@ -174,6 +175,7 @@ int main(void) {
 
   // /* TAIL LIGHTS SETUP */
   struct angles_t * angles = malloc(sizeof(angles_t));
+  angles->heading = 0.0;
 
   // init_tail_lights();
 
@@ -185,25 +187,14 @@ int main(void) {
   bool first_time = false;
   float first_timestamp = 0;
   int i = 0;
-
+  mpu9250_start_gyro_integration();
 	while (1) {
 
     char print_string[16];
     // read sensors from robot
     // Update angles and lights
     update_angles(angles);
-    if (first_time == false) {
-      first_timestamp = angles->time_stamp * 0.000001;
-      first_time = true;
-    }
-    if (update_z) {
-      angles->heading = (angles->heading) - (angles->time_stamp * 0.000001 - first_timestamp) * 0.305;
-      update_z = false;
-    }
-    // if (i++ % 10 == 0) {
-    //   printf("angle_z: %f\n", angles->heading);
-    //
-    // }
+
     switch(bike_state) {
       /*** BIKE OFF, ONLY BALANCING ***/
       case OFF: {
@@ -228,13 +219,11 @@ int main(void) {
         } else {
           direction = REVERSE;
         }
-        // set the PWM to the speed TODO: Map speed to PWM
-        // printf("Drive Speed PWM:%d\n", drive_speed);
-        // printf("Drive Speed DIR:%d\n", direction);
+        angles->heading = mpu9250_read_gyro_integration().z_axis;
         set_dc_motor_direction(drive, direction);
     	  set_dc_motor_pwm(drive, drive_speed);
         get_bike_state(&x, &y, &heading);
-        if (i++ % 15 == 0) {
+        if (i++ % 20 == 0) {
           // printf("%f\n", angles->time_stamp);
           printf("x: %f, y %f, heading: %f\n", x, y, heading);
         }
@@ -249,27 +238,33 @@ int main(void) {
         if ((path_angle_received == false) || (path_len_received == false) || (nav_complete == true)) {
           direction = STOP;
           drive_speed = 0;
-          turn_angle = 0;
+          turn_auto = 0;
           printf("IM DOING NOTHING: nav %d, len: %d, ang: %d\n", nav_complete, path_len_received, path_angle_received);
+          mpu9250_stop_gyro_integration();
         } else {
           /*** FOLLOW THE PATH ***/
           if (destination_set == false) {
+            reset_tracking();
+            mpu9250_start_gyro_integration();
             printf("Angle:%d, Length:%d\n", path_angle, path_len);
             set_dest(path_len, path_angle);
             destination_set = true;
           }
+          angles->heading = mpu9250_read_gyro_integration().z_axis;
           direction = FORWARD;
           drive_speed = 100;
-          turn_angle = (int8_t) calc_steering();
-          printf("%d\n", turn_angle);
-          printf("x: %f, y %f, heading: %f\n", x, y, heading);
+          turn_auto = calc_steering();
+          // printf("%d\n", turn_angle);
+          if (i++ % 20 == 0) {
+            printf("x: %f, y %f, heading: %f, turn angle: %f\n", x, y, heading, turn_auto);
+          }
         }
         set_dc_motor_direction(drive, direction);
         set_dc_motor_pwm(drive, drive_speed); //always drive at a constant speed in auto mode
-        set_servo_angle(front, turn_angle);
+        set_servo_angle(front, turn_auto);
         break;
       }
     }
-    nrf_delay_ms(5);
+    nrf_delay_ms(1);
 	}
 }

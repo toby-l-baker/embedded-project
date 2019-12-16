@@ -112,9 +112,6 @@ void update_angles(angles_t * angles) {
     angles->theta_x = euler.roll;
     angles->theta_y = euler.pitch;
     angles->theta_z = euler.yaw;
-    angles->heading = euler.yaw * TO_DEG * GYRO_SCALING_Z;
-    // prinf("YAW_OG: %f\n", euler.yaw * TO_DEG * GYRO_SCALING_Z);
-    // printf("Roll: %f Pitch: %f Yaw: %f\n", euler.roll, euler.pitch, euler.yaw * TO_DEG * GYRO_SCALING_Z);
     sample_imu = false;
     angles->time_stamp = timestamp();
   }

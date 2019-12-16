@@ -12,7 +12,7 @@ from evdev import InputDevice, ecodes, categorize
 # addr = args.addr.lower()
 addr = "c0:98:e5:49:00:0b"
 BLE = True
-event = "event7"
+event = "event5"
 
 if len(addr) != 17:
     raise ValueError("Invalid address supplied")
@@ -158,8 +158,8 @@ class BikeController():
                         '''Print desired path and send to buckler'''
                         print("(r (cm), theta (deg)): ({},{})".format(np.uint8(self.path_length), self.path_angle * 360/255))
                         if BLE:
-                            self.path_len_char.write(bytes([100])) #np.uint8(self.path_length)
-                            self.path_angle_char.write(bytes([0])) #self.path_angle
+                            self.path_len_char.write(bytes([np.uint8(self.path_length)])) #np.uint8(self.path_length)
+                            self.path_angle_char.write(bytes([self.path_angle])) #self.path_angle
                         '''Reset path lengths and angles'''
                         self.path_length = 0
                         self.path_angles = []
