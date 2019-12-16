@@ -144,7 +144,7 @@ void brake_check(angles_t * angles){
 
 	float time_delta = delta_time(angles->time_stamp, first_data_time);
 	slist_add_tail(accel_list, angles->time_stamp, angles->raw_accel_x);
-	printf("Time delta: %f, Accel: %f\n", time_delta,angles->raw_accel_x);
+	// printf("Time delta: %f, Accel: %f\n", time_delta,angles->raw_accel_x);
 	while (time_delta > BRAKE_ACCELERATION_USECOND_THRESH && accel_list->count > 0){
 		
 		first_data_time = slist_remove_head(accel_list);
@@ -152,7 +152,7 @@ void brake_check(angles_t * angles){
 
 	}
 	float accel_avg = average_accel_list(accel_list);
-	printf("Average: %f, Count: %i\n\n", accel_avg, accel_list->count);
+	// printf("Average: %f, Count: %i\n\n", accel_avg, accel_list->count);
 	if (accel_avg <= -BRAKE_ACCEL_THRESHOLD_VAL_G){
 		display_write(BRAKE_STRING, DISPLAY_LINE_0);
 	}

@@ -1,4 +1,3 @@
-
 #include "setup.h"
 #include "motor.h"
 #include "board_params.h"
@@ -12,8 +11,6 @@
 
 
 int main(){
-
-
 	initialize_buckler();
 
 	struct dc_motor * flywheel = create_dc_motor(FLYWHEEL_PIN_ENABLE, FLYWHEEL_PIN_IN1, FLYWHEEL_PIN_IN2, FlYWHEEL_MOTOR_CHANNEL);
@@ -61,11 +58,11 @@ int main(){
         // duty_cycle_torque_proportional
         // duty_cycle_torque_PID(angles->theta_x, angles->time_stamp, &duty_cycle, &direction);
      
-        if (loop_count++ %100 == 0){
+        if (loop_count++ %10 == 0){
             
-            // printf("State: %i\n", bike_state);
-            // printf("X acceleration: %f\n", angles->raw_accel_x);
-            // print_angles(angles, duty_cycle);
+            printf("State: %i\n", bike_state);
+            printf("Z angle: %f\n", angles->raw_accel_x);
+            print_angles(angles, duty_cycle);
         }
         update_lights(angles);
 
