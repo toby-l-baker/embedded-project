@@ -179,6 +179,8 @@ int main(void) {
 
   init_tail_lights();
 
+  init_buzzer();
+
   init_tracking(drive, front, angles);
   //
   start_tracking();
@@ -190,12 +192,17 @@ int main(void) {
 
   mpu9250_start_gyro_integration();
 	while (1) {
-
     char print_string[16];
     // read sensors from robot
     // Update angles and lights
     update_angles(angles);
-
+    update_lights(angles);
+    if (direction == REVERSE) {
+      buzzer_on();
+      printf("BUZZ\n");
+    } else {
+      buzzer_off();
+    }
     switch(bike_state) {
       /*** BIKE OFF, ONLY BALANCING ***/
       case OFF: {
@@ -210,7 +217,6 @@ int main(void) {
         // print_state(bike_state);
         //set servo angle
         set_servo_angle(front, (float) turn_angle);
-        update_lights(angles);
         if (drive_speed == 0){
         	// if speed is negative reverse
           direction = STOP;
@@ -224,10 +230,10 @@ int main(void) {
         set_dc_motor_direction(drive, direction);
     	  set_dc_motor_pwm(drive, drive_speed);
         get_bike_state(&x, &y, &heading);
-        if (i++ % 20 == 0) {
-          // printf("%f\n", angles->time_stamp);
-          // printf("x: %f, y %f, heading: %f\n", x, y, heading);
-        }
+        // if (i++ % 20 == 0) {
+        //   // printf("%f\n", angles->time_stamp);
+        //   // printf("x: %f, y %f, heading: %f\n", x, y, heading);
+        // }
         //set_dc_motor_pwm(flywheel, drive_speed);
         break;
       }

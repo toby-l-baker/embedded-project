@@ -20,6 +20,7 @@
 #include "display.h"
 #include "tail_lights.h"
 #include "accel_list.h"
+#include "buzzer.h"
 
 #include <stdint.h>
 #include <stdlib.h>
