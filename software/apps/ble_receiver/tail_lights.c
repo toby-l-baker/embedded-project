@@ -69,9 +69,9 @@ void update_blinkers(int8_t side, float time_stamp){
 			display_write(EMPTY_STRING, DISPLAY_LINE_1);
 		}
 		else{
-			if (side==RIGHT)
+			if (side==LEFT)
 				display_write(RIGHT_BLINKER_STRING, DISPLAY_LINE_1);
-			else if (side == LEFT)
+			else if (side == RIGHT)
 				display_write(LEFT_BLINKER_STRING, DISPLAY_LINE_1);
 		}
 	}

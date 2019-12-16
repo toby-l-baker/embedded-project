@@ -11,7 +11,7 @@ from evdev import InputDevice, ecodes, categorize
 # args = parser.parse_args()
 # addr = args.addr.lower()
 addr = "c0:98:e5:49:00:0b"
-BLE = True
+BLE = False
 event = "event5"
 
 if len(addr) != 17:
@@ -52,7 +52,7 @@ class BikeController():
         self.count = 0
 
         # keep state for button presses
-        self.buttons = {"A": 305, "B": 306, "START": 316, "UP": 313, "JOY_X": 0, "JOY_Y": 1}
+        self.buttons = {"A": 305, "B": 306, "START": 316, "UP": 313, "LEFT": 307, "RIGHT": 312, "JOY_X": 0, "JOY_Y": 1}
         self.state = States.IDLE
         # dicts for mapping angles and speeds to new ranges
         self.turn_map = {"new_min": -45, "new_max": 45, "min": -90, "max": 90}
@@ -64,7 +64,8 @@ class BikeController():
         # integral time constant for auonomous path plan
         self.int_const = 0.006 # A somewhat magic number that gives the resolution we want
         self.path_length = 0
-        self.path_angles = []
+        self.path_angle = 0
+        self.angle_increment = 5
 
     def __enter__(self):
         return self
@@ -100,20 +101,12 @@ class BikeController():
             return np.uint8(num)
 
     '''Maps a -180 to 180 degree angle to the range 0 to 255 for BLE - converted to int on buckler'''
-    def map_180_to_uint(self, list):
-        average = np.average(list)
-        val = np.interp(average, (-180, 180), (-128, 127))
+    def map_180_to_uint(self, val):
+        val = np.interp(val, (-180, 180), (-128, 127))
         if val < 0:
             return np.uint8(256 + val)
         else:
             return np.uint8(val)
-
-    '''Maps the path angle to a range of -180 to 180 degrees, where 0 is straight ahead'''
-    def map_angle_path(self):
-        ang = np.arctan2(-self.x, self.y)*180/np.pi - 180
-        if ang < -180:
-            ang = 360+ang
-        return ang
 
     def run(self):
         for event in self.gamepad.read_loop():
@@ -124,6 +117,8 @@ class BikeController():
                 '''Set the state to be Autonomous when pressing A'''
                 if event.code == self.buttons["A"] and event.value == 1:
                     self.state = States.AUTONOMOUS
+                    self.path_angle = 0
+                    self.path_length = 0
                     print(self.state)
                     if BLE:
                         self.manual_char.write(bytes([False]))
@@ -152,17 +147,30 @@ class BikeController():
                             self.power_char.write(bytes([False]))
                         time.sleep(0.1)
 
-                '''Send path to follow'''
-                if event.code == self.buttons["UP"] and event.value == 1:
-                    if self.state == States.AUTONOMOUS:
+                if self.state == States.AUTONOMOUS:
+                    '''Send path to follow'''
+                    if event.code == self.buttons["UP"] and event.value == 1:
                         '''Print desired path and send to buckler'''
-                        print("(r (cm), theta (deg)): ({},{})".format(np.uint8(self.path_length), self.path_angle * 360/255))
                         if BLE:
                             self.path_len_char.write(bytes([np.uint8(self.path_length)])) #np.uint8(self.path_length)
-                            self.path_angle_char.write(bytes([self.path_angle])) #self.path_angle
+                            self.path_angle_char.write(bytes([np.uint8(map_180_to_uint(self.path_angle))])) #self.path_angle
                         '''Reset path lengths and angles'''
                         self.path_length = 0
-                        self.path_angles = []
+                        self.path_angle = 0
+
+                    if event.code == self.buttons["RIGHT"] and event.value == 1:
+                        '''Increment angle by 5'''
+                        self.path_angle += self.angle_increment
+                        if self.path_angle > 180:
+                            self.path_angle = 180
+                        print("Current Path Plan (r, theta_int): ({},{})".format(np.uint8(self.path_length), self.path_angle))
+
+                    if event.code == self.buttons["LEFT"] and event.value == 1:
+                        '''Decrement angle'''
+                        self.path_angle -= self.angle_increment
+                        if self.path_angle < -180:
+                            self.path_angle = 180
+                        print("Current Path Plan (r, theta_int): ({},{})".format(np.uint8(self.path_length), self.path_angle))
 
             '''Update instructions for bike'''
             if event.type == ecodes.EV_ABS:
@@ -194,16 +202,15 @@ class BikeController():
                     self.count += 1
 
                 if self.state == States.AUTONOMOUS:
-                    self.path_angles.append(self.map_angle_path())
+                    # self.path_angles.append(self.map_angle_path())
                     self.map_speed()
-                    self.path_length += self.int_const * abs(self.speed) # self.speed updated in self.map_speed()
+                    self.path_length += self.int_const * self.speed # self.speed updated in self.map_speed()
                     '''Clip path length to be in range of 0 to 255 cm '''
                     if self.path_length <= 0:
                         self.path_length = 0
                     elif self.path_length >= 255:
                         self.path_length = 255
-                    self.path_angle = self.map_180_to_uint(self.path_angles)
-                    print("Current Path Plan (r, theta_int, theta_float): ({},{}, {})".format(self.path_length, self.path_angle * (360/255), np.average(self.path_angles)))
+                    print("Current Path Plan (r, theta_int): ({},{})".format(np.uint8(self.path_length), self.path_angle))
 
 with BikeController(addr) as bike:
     print('Use Start, A, B and Joystick to control the bike')
