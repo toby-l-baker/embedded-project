@@ -234,8 +234,8 @@ int main(void) {
         set_dc_motor_direction(drive, direction);
     	  set_dc_motor_pwm(drive, drive_speed);
         get_bike_state(&x, &y, &heading);
-        if (i++ % 10 == 0) {
-          printf("%f\n", angles->time_stamp);
+        if (i++ % 15 == 0) {
+          // printf("%f\n", angles->time_stamp);
           printf("x: %f, y %f, heading: %f\n", x, y, heading);
         }
         //set_dc_motor_pwm(flywheel, drive_speed);
@@ -261,7 +261,7 @@ int main(void) {
           direction = FORWARD;
           drive_speed = 100;
           turn_angle = (int8_t) calc_steering();
-          printf("%f\n", turn_angle);
+          printf("%d\n", turn_angle);
           printf("x: %f, y %f, heading: %f\n", x, y, heading);
         }
         set_dc_motor_direction(drive, direction);
