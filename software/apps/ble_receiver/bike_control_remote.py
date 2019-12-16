@@ -12,7 +12,7 @@ from evdev import InputDevice, ecodes, categorize
 # addr = args.addr.lower()
 addr = "c0:98:e5:49:00:0b"
 BLE = True
-event = "event7"
+event = "event5"
 
 if len(addr) != 17:
     raise ValueError("Invalid address supplied")
@@ -196,7 +196,7 @@ class BikeController():
                 if self.state == States.AUTONOMOUS:
                     self.path_angles.append(self.map_angle_path())
                     self.map_speed()
-                    self.path_length += self.int_const * self.speed # self.speed updated in self.map_speed()
+                    self.path_length += self.int_const * abs(self.speed) # self.speed updated in self.map_speed()
                     '''Clip path length to be in range of 0 to 255 cm '''
                     if self.path_length <= 0:
                         self.path_length = 0

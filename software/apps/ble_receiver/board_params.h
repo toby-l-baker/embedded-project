@@ -5,6 +5,7 @@
 
 // Comment out to remove adc filtering
 #define FILTER
+#define BUZZER_PIN 7
 
 // Defines for directions used in set_dc_motor_direction()
 #define FORWARD				1
