@@ -4,6 +4,8 @@ Servo Motor PWM:  2 <br />
 DC Motor PWM:     3 <br />
 Timer Module:     4 <br />
 
+## To Run project update repo: <br />
+`git submodule update --init --recursive`
 ## Add the following macros to: <br /> 
 `embedded-project/software/buckler/software/boards/buckler_revB/app_config.h`
 
