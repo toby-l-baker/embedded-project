@@ -199,7 +199,7 @@ int main(void) {
     update_lights(angles);
     if (direction == REVERSE) {
       buzzer_on();
-      printf("BUZZ\n");
+      // printf("BUZZ\n");
     } else {
       buzzer_off();
     }
@@ -214,8 +214,9 @@ int main(void) {
       /*** MANUAL CONTROL OF THE BIKE ***/
       case MANUAL: {
         sprintf(print_string, "Spd:%d  Ang:%d", drive_speed, turn_angle);
-        // print_state(bike_state);
+        print_state(bike_state);
         //set servo angle
+        // printf("Drive Speed: %d", drive_speed);
         set_servo_angle(front, (float) turn_angle);
         if (drive_speed == 0){
         	// if speed is negative reverse
