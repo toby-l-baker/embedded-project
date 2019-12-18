@@ -1,7 +1,5 @@
 #include "timer_module.h"
 
-#define MICROSECONDS 1000000.0
-
 static uint32_t recorded_vals[NUM_LOOPS] = {0};
 static int current_idx = 0;
 

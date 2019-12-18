@@ -14,8 +14,7 @@ struct servo * create_servo(uint8_t pin_nb, uint8_t pwm_channel)
 
 void set_servo_angle(struct servo * servo, float angle) {
     angle = -angle; // for right hand rule convention
-    float duty_cycle = ((angle+85.0)*12.0/170.0 + 2.0); //shift to 90 being centre and map to a 180 range, RANGE 2-13 PWM values
-    // printf("%f\n", duty_cycle);
+    float duty_cycle = ((angle+SERVO_RANGE/2)*12.0/SERVO_RANGE + 2.0); //shift to 90 being centre and map to a 180 range, RANGE 2-13 PWM values
     set_servo_pwm(servo, duty_cycle);
 }
 

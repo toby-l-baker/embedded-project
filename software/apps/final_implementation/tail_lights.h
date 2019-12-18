@@ -2,10 +2,6 @@
 #define TAIL_LIGHTS_H
 
 #include "setup.h"
-#include "board_params.h"
-#include "mpu.h"
-#include "accel_list.h"
-
 
 void init_tail_lights();
 void blinker_toggle();

@@ -2,25 +2,6 @@
 
 nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
 
-#define RIGHT 1
-#define LEFT -1
-
-
-#define RIGHT_BLINKER_STRING	"              >>"
-#define LEFT_BLINKER_STRING		"<<              "
-#define BRAKE_STRING			"|||          |||"
-#define BOTH_BLINKER_STRING		"<<            >>"
-#define EMPTY_STRING			"                "
-
-#define ACCEL_POSITIVE 1
-#define ACCEL_NEGATIVE -1
-#define ACCEL_ZERO		0
-
-
-#define BLINKER_SAMPLE_FREQ 50
-
-
-
 bool Blink_State = false;
 
 
@@ -49,10 +30,7 @@ void update_blinkers(int8_t side, float time_stamp){
 	bool change_blinker = false;
 	static int8_t prev_side = 0;
 
-
-
 	static float Blink_Update_Time = 0.0;
-	// printf("time_stamp: %f, Blink_Update_Time: %f\n", time_stamp, Blink_Update_Time);
 
 	if (delta_time(time_stamp, Blink_Update_Time) >= BLINKER_PERIOD){
 
@@ -76,11 +54,9 @@ void update_blinkers(int8_t side, float time_stamp){
 		}
 	}
 
-
-
-
 	prev_side = side;
 }
+
 void turn_check(angles_t * angles){
 	static float prev_angle = 0.0;
 	static float prev_timestamp = 0.0;

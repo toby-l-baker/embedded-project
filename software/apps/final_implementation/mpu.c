@@ -1,9 +1,5 @@
 #include "mpu.h"
 
-#define TO_RAD 3.1415926535 / 180
-#define GYRO_SCALING_Z 0.07
-#define TO_DEG 180 / 3.1415926535
-
 mpu9250_measurement_t accel;
 mpu9250_measurement_t gyro;
 
@@ -11,7 +7,6 @@ Quaternion quat;
 EulerAngles euler;
 
 bool sample_imu = false;
-bool update_z = false;
 
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 
@@ -48,7 +43,6 @@ EulerAngles ToEulerAngles(Quaternion q) {
 static void imu_callback(void * p_context)
 {
   sample_imu = true;
-  update_z = true;
 }
 
 void init_mpu9250() {
@@ -66,12 +60,10 @@ void init_mpu9250() {
 
 void init_mpu9250_timer(float ms, bool ble) {
   ret_code_t error_code = NRF_SUCCESS;
-  // lfclk_request();
   //Initlize timer library
   if (ble == false) {
     error_code = app_timer_init();
   }
-  // APP_ERROR_CHECK(error_code);
   // Create timer instance
   APP_TIMER_DEF(IMU_TIMER);
   error_code = app_timer_create(&IMU_TIMER, APP_TIMER_MODE_REPEATED, imu_callback);
@@ -86,14 +78,9 @@ void init_mpu9250_timer(float ms, bool ble) {
 
 void update_angles(angles_t * angles) {
   if (sample_imu) {
-  // if (true){
-    // printf("IN update angles.\n");
-
-
     gyro = mpu9250_read_gyro();
 
     accel = mpu9250_read_accelerometer();
-
 
     angles->raw_accel_x = accel.x_axis;
     angles->raw_accel_y = accel.y_axis;
@@ -101,8 +88,8 @@ void update_angles(angles_t * angles) {
     angles->raw_imu_theta_x = gyro.x_axis;
     angles->raw_imu_theta_y = gyro.y_axis;
     angles->raw_imu_theta_z = gyro.z_axis;
-    //MadgwickAHRSupdateIMU(gyro.x_axis * TO_RAD, gyro.y_axis * TO_RAD, gyro.z_axis * TO_RAD, accel.x_axis* 9.81, accel.y_axis * 9.81, accel.z_axis * 9.81);
-    MadgwickAHRSupdateIMU(gyro.x_axis * TO_RAD, gyro.y_axis*TO_RAD, gyro.z_axis*TO_RAD, accel.x_axis, accel.y_axis, accel.z_axis);
+
+    MadgwickAHRSupdateIMU(gyro.x_axis*TO_RAD, gyro.y_axis*TO_RAD, gyro.z_axis*TO_RAD, accel.x_axis, accel.y_axis, accel.z_axis);
 
     quat.w = q0;
     quat.x = q1;

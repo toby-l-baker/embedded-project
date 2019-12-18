@@ -1,17 +1,4 @@
-#include "motor.h"
 #include "setup.h"
-
-
-// struct servo_motor * create_servo_motor(uint8_t ctrl){
-//     struct servo_motor * motor = malloc(sizeof(struct servo_motor));
-//     if (motor){
-//         nrf_gpio_pin_clear(ctrl);
-//         motor->duty_cycle = 0;
-//         motor->ctrl = ctrl;
-//         nrf_gpio_cfg_output(ctrl);
-//     }
-//     return motor;
-// }
 
 struct dc_motor * create_dc_motor(uint8_t enable, uint8_t in1, uint8_t in2, uint8_t pwm_channel){
     struct dc_motor * motor = malloc(sizeof(struct dc_motor));
@@ -27,8 +14,6 @@ struct dc_motor * create_dc_motor(uint8_t enable, uint8_t in1, uint8_t in2, uint
         motor->in1 = in1;
         motor->in2 = in2;
         motor->pwm_channel = pwm_channel;
-
-
     }
     return motor;
 
@@ -93,7 +78,7 @@ ret_code_t set_drive_PWM(struct dc_motor* motor, int8_t PWM) {
 }
 
 ret_code_t set_drive_speed(struct dc_motor* motor, float speed) {
-    float PWM_float = speed/WHEEL_RADIUS_CM * 60.0 / (2.0*3.14*DRIVE_RPM_PER_PWM);
+    float PWM_float = speed / WHEEL_RADIUS_CM * 60.0 / (2 * PI * DRIVE_RPM_PER_PWM);
 
     if (PWM_float > 100.0 || PWM_float < -100.0) {
         printf("Required speed (%f cm/s) is more than max speed\n", speed);
@@ -125,9 +110,3 @@ ret_code_t set_drive_speed(struct dc_motor* motor, float speed) {
 
     return error;
 }
-
-// ret_code_t set_servo_motor_pwm(struct servo_motor * motor, uint8_t duty_cycle){
-//     motor->duty_cycle = duty_cycle;
-//     return app_pwm_channel_duty_set(motor->pwm_inst, SERVO_MOTOR_CHANNEL, motor->duty_cycle);
-//     // while (app_pwm_channel_duty_set(motor->pwm_inst, SERVO_MOTOR_CHANNEL, motor->duty_cycle) == NRF_ERROR_BUSY);
-// }

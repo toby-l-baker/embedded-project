@@ -1,11 +1,7 @@
-#ifndef MOTOR_DRIVER
-#define MOTOR_DRIVER
+#ifndef SERVO_DRIVER
+#define SERVO_DRIVER
 
-#include "buckler.h"
-#include "app_pwm.h"
-
-#define PWM_CHANNEL_0   0
-#define PWM_CHANNEL_1   1
+#include "setup.h"
 
 /* Struct for storing information about each ADC Channel */
 struct servo

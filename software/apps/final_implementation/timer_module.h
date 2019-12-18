@@ -1,13 +1,7 @@
 #ifndef TIMER_MODULE_H
 #define TIMER_MODULE_H
 
-#include "app_error.h"
-#include "app_timer.h"
-#include "nrf.h"
-#include "board_params.h"
-
-#define NUM_LOOPS 100
-#define PRESCALE_CONV 0.000001
+#include "setup.h"
 
 void init_timer_module();
 

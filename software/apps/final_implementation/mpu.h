@@ -1,15 +1,8 @@
 #ifndef MPU_H
 #define MPU_H
 
-
-#include "setup.h"
-#include "mpu9250.h"
-#include "timer_module.h"
-#include "board_params.h"
-
 #include "MadgwickAHRS.h"
-
-extern bool update_z;
+#include "setup.h"
 
 //Contains accelerometer readings in DEGREES
 typedef struct angles_t {
