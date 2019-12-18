@@ -2,9 +2,9 @@
 
 ## Contents
 1. accel_list: an adaptation of a linked list library found online used to store accelerometer readings to turn on brake lights
-  * Author: Garey
+    1. Author: Garey
 2. bike_control_remote.py: bike_control is the file used from lab and bike_control_remote is an adaptation that uses the N64 remote joystick and various buttons to control the bike.
-  * Author: Toby
+    1. Author: Toby
 3. board_params.h: contains all macros used throughout the code including pin numbers, constants etc.
 4. control*: contains both the code used for estimation and control of the bike to it's desired location (app folder: self_driving)
   1. Authors: Leo (Estimation), Carl (Control) 4.1
