@@ -11,7 +11,7 @@ from evdev import InputDevice, ecodes, categorize
 # args = parser.parse_args()
 # addr = args.addr.lower()
 addr = "c0:98:e5:49:00:0b"
-BLE = False
+BLE = True
 event = "event5"
 
 if len(addr) != 17:
@@ -55,7 +55,7 @@ class BikeController():
         self.buttons = {"A": 305, "B": 306, "START": 316, "UP": 313, "LEFT": 307, "RIGHT": 312, "JOY_X": 0, "JOY_Y": 1}
         self.state = States.IDLE
         # dicts for mapping angles and speeds to new ranges
-        self.turn_map = {"new_min": -45, "new_max": 45, "min": -90, "max": 90}
+        self.turn_map = {"new_min": -35, "new_max": 35, "min": -90, "max": 90}
         self.drive_map = {"new_min": -100, "new_max": 100, "min": -128, "max": 128}
         #initial values for x and y
         self.x = 0
@@ -122,6 +122,8 @@ class BikeController():
                     print(self.state)
                     if BLE:
                         self.manual_char.write(bytes([False]))
+                        self.path_len_char.write(bytes([0]))
+                        self.path_angle_char.write(bytes([0]))
                     time.sleep(0.1)
 
                 '''Set the state to be Manual when pressing B'''
@@ -153,22 +155,22 @@ class BikeController():
                         '''Print desired path and send to buckler'''
                         if BLE:
                             self.path_len_char.write(bytes([np.uint8(self.path_length)])) #np.uint8(self.path_length)
-                            self.path_angle_char.write(bytes([np.uint8(map_180_to_uint(self.path_angle))])) #self.path_angle
+                            self.path_angle_char.write(bytes([np.uint8(self.map_180_to_uint(self.path_angle))])) #self.path_angle
                         '''Reset path lengths and angles'''
                         self.path_length = 0
                         self.path_angle = 0
 
                     if event.code == self.buttons["RIGHT"] and event.value == 1:
                         '''Increment angle by 5'''
-                        self.path_angle += self.angle_increment
-                        if self.path_angle > 180:
-                            self.path_angle = 180
+                        self.path_angle -= self.angle_increment
+                        if self.path_angle < -180:
+                            self.path_angle = -180
                         print("Current Path Plan (r, theta_int): ({},{})".format(np.uint8(self.path_length), self.path_angle))
 
                     if event.code == self.buttons["LEFT"] and event.value == 1:
                         '''Decrement angle'''
-                        self.path_angle -= self.angle_increment
-                        if self.path_angle < -180:
+                        self.path_angle += self.angle_increment
+                        if self.path_angle > 180:
                             self.path_angle = 180
                         print("Current Path Plan (r, theta_int): ({},{})".format(np.uint8(self.path_length), self.path_angle))
 
@@ -206,8 +208,8 @@ class BikeController():
                     self.map_speed()
                     self.path_length += self.int_const * self.speed # self.speed updated in self.map_speed()
                     '''Clip path length to be in range of 0 to 255 cm '''
-                    if self.path_length <= 0:
-                        self.path_length = 0
+                    if self.path_length <= 20:
+                        self.path_length = 20
                     elif self.path_length >= 255:
                         self.path_length = 255
                     print("Current Path Plan (r, theta_int): ({},{})".format(np.uint8(self.path_length), self.path_angle))
