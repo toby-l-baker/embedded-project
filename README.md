@@ -4,6 +4,8 @@ A semi-autonomous bike concept with the following goals
   2. Drive the bike with a remote control and bluetooth.
   3. Implement state estimation to enable autonomous navigation.
   4. Setup a controller to send the bike to a target location.
+  
+## To see our final, integrated code base head to the Final Implementation folder in /software/apps
 
 # Install
 To use this repository first clone the directory. Following that run:
